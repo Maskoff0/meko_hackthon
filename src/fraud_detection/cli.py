@@ -7,6 +7,13 @@ End-to-end synthetic flow that exercises the full Phase 1 path:
   policy engine -> shadow recommendation -> audit log ->
   containment gate (denied in shadow mode).
 
+Also produces:
+
+  - Baseline comparison: shared vs no-shared Meko memory (challenge.md
+    Expected Outcome 4: baseline comparison encouraged).
+  - Trace walkthroughs: >=3 end-to-end decision traces (challenge.md
+    Expected Outcome 3: trace walkthroughs).
+
 All signals are synthetic. No production signals are sent. No
 containment/action credentials exist, so no execution path exists.
 Constraints are enforced via Settings and can be eliminated by toggling
@@ -16,6 +23,7 @@ containment.py).
 from __future__ import annotations
 
 import asyncio
+import json
 import sys
 from datetime import datetime, timezone
 from typing import Optional
@@ -39,6 +47,7 @@ from .agents import (
     DeviceAgent,
     ResetAgent,
     TransactionAgent,
+    SupportAgent,
     CorrelatorAgent,
 )
 from .settings import Settings
@@ -64,6 +73,12 @@ SYNTHETIC_FIXTURES = [
         "provenance": "synthetic",
     },
     {
+        "event_type": EventType.SUPPORT,
+        "source": "synthetic_support_agent",
+        "payload": {"reset_requests": 3, "unusual_time": True, "multiple_contacts": True},
+        "provenance": "synthetic",
+    },
+    {
         "event_type": EventType.TRANSACTION,
         "source": "synthetic_transaction_agent",
         "payload": {
@@ -80,7 +95,16 @@ TRIGGER_TYPES = {
     EventType.LOGIN: "new_signal_source",
     EventType.DEVICE: "new_signal_source",
     EventType.RESET: "high_risk_event",
+    EventType.SUPPORT: "high_risk_event",
     EventType.TRANSACTION: "high_risk_event",
+}
+
+AGENT_MAP = {
+    EventType.LOGIN: LoginAgent,
+    EventType.DEVICE: DeviceAgent,
+    EventType.RESET: ResetAgent,
+    EventType.SUPPORT: SupportAgent,
+    EventType.TRANSACTION: TransactionAgent,
 }
 
 
@@ -93,6 +117,41 @@ def build_event(fixture: dict) -> AccountEvent:
         provenance=fixture["provenance"],
         timestamp=datetime.now(timezone.utc),
     )
+
+
+async def run_agent_pipeline(
+    events: list[AccountEvent],
+    investigation_id: str,
+    meko: Optional[MekoAdapter],
+    orchestrator: Orchestrator,
+    audit: AuditLog,
+) -> tuple[list[EvidenceFinding], EvidenceFinding]:
+    """Run scoped agents against permitted evidence.
+
+    Returns (findings, correlated_finding).
+    """
+    findings: list[EvidenceFinding] = []
+    agent_classes = [(AGENT_MAP[e.event_type], e) for e in events]
+
+    for agent_cls, event in agent_classes:
+        agent = agent_cls(meko) if meko is not None else agent_cls(MekoAdapter(Settings()))
+        finding = await agent.assess(event)
+        finding.investigation_id = investigation_id
+        ok = orchestrator.add_finding(investigation_id, finding)
+        if not ok:
+            break
+        findings.append(finding)
+        audit.record_finding(finding)
+
+    correlator = CorrelatorAgent(meko) if meko is not None else CorrelatorAgent(
+        MekoAdapter(Settings())
+    )
+    correlated = await correlator.correlate(investigation_id, findings)
+    correlated.investigation_id = investigation_id
+    ok = orchestrator.add_finding(investigation_id, correlated)
+    audit.record_finding(correlated)
+
+    return findings, correlated
 
 
 async def run_phase1(shadow_mode: Optional[bool] = None) -> int:
@@ -128,7 +187,6 @@ async def run_phase1(shadow_mode: Optional[bool] = None) -> int:
         return 1
 
     # --- 2. Trigger investigation on the highest-severity event -----------
-    # Use the transaction event (new payee + test payment) as the trigger.
     trigger_event = events[-1]
     trigger_type = TRIGGER_TYPES[trigger_event.event_type]
 
@@ -148,7 +206,7 @@ async def run_phase1(shadow_mode: Optional[bool] = None) -> int:
         trigger_type=trigger_type,
         hypothesis=(
             "Account takeover sequence: credential stuffing -> new device -> "
-            "password reset -> new payee test payment"
+            "password reset -> support contact -> new payee test payment"
         ),
     )
     audit.record_investigation_created(investigation)
@@ -156,59 +214,54 @@ async def run_phase1(shadow_mode: Optional[bool] = None) -> int:
           f"(trigger={trigger_type}, budget={investigation.tool_call_budget} "
           f"tool calls, {investigation.meko_retrieval_budget} Meko retrievals)")
 
-    # --- 3. Run scoped agents against permitted evidence ------------------
-    findings: list[EvidenceFinding] = []
-    agent_classes = [
-        (LoginAgent, events[0] if len(events) > 0 else trigger_event),
-        (DeviceAgent, events[1] if len(events) > 1 else trigger_event),
-        (ResetAgent, events[2] if len(events) > 2 else trigger_event),
-        (TransactionAgent, trigger_event),
-    ]
+    # --- 3. Run agents with shared Meko memory -----------------------------
+    print("\n--- Phase 1a: Shared Meko memory path ---\n")
+    findings_shared: list[EvidenceFinding] = []
+    correlated_shared: Optional[EvidenceFinding] = None
 
-    meko = MekoAdapter(settings)
-    async with meko.connect() as meko_session:
-        for agent_cls, event in agent_classes:
-            agent = agent_cls(meko)
+    meko_shared = MekoAdapter(settings)
+    async with meko_shared.connect() as meko_session:
+        for agent_cls, event in [
+            (LoginAgent, events[0]),
+            (DeviceAgent, events[1]),
+            (ResetAgent, events[2]),
+            (SupportAgent, events[3]),
+            (TransactionAgent, trigger_event),
+        ]:
+            agent = agent_cls(meko_session)
             finding = await agent.assess(event)
             finding.investigation_id = investigation.investigation_id
             ok = orchestrator.add_finding(investigation.investigation_id, finding)
             if not ok:
-                print(f"[agent] {agent.agent_id}: investigation halted, "
-                      f"skipping remaining agents")
+                print(f"[agent] {agent.agent_id}: investigation halted")
                 break
-            findings.append(finding)
+            findings_shared.append(finding)
             audit.record_finding(finding)
             print(
                 f"[agent] {agent.agent_id}: {finding.conclusion} "
                 f"(confidence={finding.confidence}, "
                 f"reason_codes={finding.reason_codes})"
             )
-
-            # Record Meko retrieval against budget (context_search counts as
-            # one retrieval; agents do not call Meko directly in Phase 1 —
-            # Meko calls are made through the adapter at trigger points).
             if not orchestrator.record_meko_retrieval(investigation.investigation_id):
-                print(f"[budget] Meko retrieval budget exhausted after "
-                      f"{agent.agent_id}")
+                print(f"[budget] Meko retrieval budget exhausted after {agent.agent_id}")
                 break
 
-        # --- 4. Correlate findings ---------------------------------------
-        correlator = CorrelatorAgent(meko)
-        correlated = await correlator.correlate(
-            investigation.investigation_id, findings
+        correlator = CorrelatorAgent(meko_session)
+        correlated_shared = await correlator.correlate(
+            investigation.investigation_id, findings_shared
         )
-        correlated.investigation_id = investigation.investigation_id
-        ok = orchestrator.add_finding(investigation.investigation_id, correlated)
-        audit.record_finding(correlated)
+        correlated_shared.investigation_id = investigation.investigation_id
+        ok = orchestrator.add_finding(investigation.investigation_id, correlated_shared)
+        audit.record_finding(correlated_shared)
         print(
-            f"[correlator] {correlated.conclusion} "
-            f"(confidence={correlated.confidence}, "
-            f"reason_codes={correlated.reason_codes})"
+            f"[correlator] {correlated_shared.conclusion} "
+            f"(confidence={correlated_shared.confidence}, "
+            f"reason_codes={correlated_shared.reason_codes})"
         )
 
-        # --- 5. Write signals to Meko memory (trigger point only) --------
+        # Write signals to Meko memory
         for event in events:
-            await meko.write_signal(
+            await meko_shared.write_signal(
                 agent_id="ingestion_agent",
                 account_id=event.account_id,
                 signal_type=event.event_type.value,
@@ -218,42 +271,94 @@ async def run_phase1(shadow_mode: Optional[bool] = None) -> int:
             )
         print(f"[meko] wrote {len(events)} signal(s) to memory")
 
-        # --- 6. Search context via Meko ----------------------------------
-        ctx = await meko.correlate(ACCOUNT_ID)
-        match_quality = (
-            ctx.get("match_quality") if isinstance(ctx, dict) else "n/a"
-        )
+        # Search context via Meko
+        ctx = await meko_shared.correlate(ACCOUNT_ID)
+        match_quality = ctx.get("match_quality") if isinstance(ctx, dict) else "n/a"
         print(f"[meko] context search match_quality={match_quality}")
 
-    # --- 7. Deterministic baseline ----------------------------------------
-    baseline = orchestrator.evaluate_baseline(trigger_event)
-    print(f"\n[baseline] triggered={baseline.triggered} score={baseline.score:.2f} "
-          f"reason_codes={baseline.reason_codes}")
-
-    # --- 8. Policy engine -> shadow recommendation ------------------------
-    policy = PolicyEngine(policy_version=investigation.policy_version)
-    recommendation = policy.decide(
+    # --- 4. Run agents WITHOUT shared Meko memory (baseline comparison) ---
+    print("\n--- Phase 1b: No-shared-Meko baseline path ---\n")
+    orchestrator_no_meko = Orchestrator(
+        baseline_evaluator=BaselineEvaluator(
+            failed_login_threshold=settings.velocity_failed_login_threshold,
+            velocity_window_seconds=settings.velocity_window_seconds,
+        ),
+        default_tool_budget=settings.default_tool_call_budget,
+        default_meko_budget=0,
+        default_token_budget=settings.default_token_budget,
+        default_deadline_seconds=settings.default_wall_clock_deadline_seconds,
+    )
+    investigation_no_meko = orchestrator_no_meko.create_investigation(
         event=trigger_event,
-        baseline=baseline,
-        findings=findings + [correlated],
+        trigger_type=trigger_type,
+        hypothesis=investigation.hypothesis,
+    )
+
+    findings_no_meko, correlated_no_meko = await run_agent_pipeline(
+        events,
+        investigation_no_meko.investigation_id,
+        meko=None,
+        orchestrator=orchestrator_no_meko,
+        audit=audit,
+    )
+    print(
+        f"[no-meko] findings={len(findings_no_meko)}, "
+        f"correlated={correlated_no_meko.conclusion} "
+        f"(confidence={correlated_no_meko.confidence})"
+    )
+
+    # --- 5. Deterministic baseline ----------------------------------------
+    baseline_shared = orchestrator.evaluate_baseline(trigger_event)
+    baseline_no_meko = orchestrator_no_meko.evaluate_baseline(trigger_event)
+    print(f"\n[baseline shared] triggered={baseline_shared.triggered} "
+          f"score={baseline_shared.score:.2f} "
+          f"reason_codes={baseline_shared.reason_codes}")
+    print(f"[baseline no-meko] triggered={baseline_no_meko.triggered} "
+          f"score={baseline_no_meko.score:.2f} "
+          f"reason_codes={baseline_no_meko.reason_codes}")
+
+    # Baseline comparison: shared vs no-shared
+    baseline_diff = baseline_shared.score - baseline_no_meko.score
+    finding_diff = len(findings_shared) - len(findings_no_meko)
+    print(f"\n[baseline comparison] score delta={baseline_diff:+.2f} "
+          f"findings delta={finding_diff:+d}")
+
+    # --- 6. Policy engine -> shadow recommendation -------------------------
+    policy = PolicyEngine(policy_version=investigation.policy_version)
+    recommendation_shared = policy.decide(
+        event=trigger_event,
+        baseline=baseline_shared,
+        findings=findings_shared + [correlated_shared],
         shadow_mode=settings.shadow_mode,
     )
-    audit.record_recommendation(ACCOUNT_ID, recommendation)
-    print(f"\n[policy] recommendation={recommendation.recommendation.value} "
-          f"abstention={recommendation.abstention} "
-          f"uncertainty={recommendation.uncertainty}")
-    print(f"         reason_codes={recommendation.reason_codes}")
-    print(f"         evidence_provenance={recommendation.evidence_provenance}")
-    print(f"         policy_version={recommendation.policy_version}")
-    print(f"         model_version={recommendation.model_version}")
+    audit.record_recommendation(ACCOUNT_ID, recommendation_shared)
+    print(f"\n[policy shared] recommendation={recommendation_shared.recommendation.value} "
+          f"abstention={recommendation_shared.abstention} "
+          f"uncertainty={recommendation_shared.uncertainty}")
+    print(f"         reason_codes={recommendation_shared.reason_codes}")
 
-    # --- 9. Containment gate (proposal ≠ authority) ----------------------
+    recommendation_no_meko = policy.decide(
+        event=trigger_event,
+        baseline=baseline_no_meko,
+        findings=findings_no_meko + [correlated_no_meko],
+        shadow_mode=settings.shadow_mode,
+    )
+    print(f"[policy no-meko] recommendation={recommendation_no_meko.recommendation.value} "
+          f"uncertainty={recommendation_no_meko.uncertainty}")
+    print(f"         reason_codes={recommendation_no_meko.reason_codes}")
+
+    # Policy comparison
+    rec_diff = recommendation_shared.reason_codes != recommendation_no_meko.reason_codes
+    print(f"[policy comparison] reason codes differ={rec_diff}")
+
+    # --- 7. Containment gate (proposal ≠ authority) -----------------------
     gate = ContainmentGate(settings)
     proposal = ContainmentProposal(
         action_type="temporary_hold",
         target=ACCOUNT_ID,
-        reason_codes=list(recommendation.reason_codes),
-        evidence_refs=[f.finding_id for f in findings] + [correlated.finding_id],
+        reason_codes=list(recommendation_shared.reason_codes),
+        evidence_refs=[f.finding_id for f in findings_shared]
+        + [correlated_shared.finding_id],
         reversibility="reversible_within_24h",
         proposed_by="correlator_agent",
     )
@@ -269,7 +374,76 @@ async def run_phase1(shadow_mode: Optional[bool] = None) -> int:
     print(f"\n[containment] decision={result.decision.value} executed={result.executed}")
     print(f"         reason: {result.reason}")
 
-    # --- 10. Close investigation -----------------------------------------
+    # --- 8. Trace walkthroughs (≥3 end-to-end decision traces) ------------
+    print("\n=== Trace Walkthroughs ===")
+    traces: list[dict] = []
+
+    for i in range(3):
+        trace_event = events[i % len(events)]
+        trace_inv = orchestrator.create_investigation(
+            event=trace_event,
+            trigger_type=TRIGGER_TYPES[trace_event.event_type],
+            hypothesis=f"Trace walkthrough {i + 1}: {trace_event.event_type.value} signal",
+        )
+        trace_finding = await AGENT_MAP[trace_event.event_type](MekoAdapter(settings)).assess(
+            trace_event
+        )
+        trace_finding.investigation_id = trace_inv.investigation_id
+        orchestrator.add_finding(trace_inv.investigation_id, trace_finding)
+
+        trace_baseline = orchestrator.evaluate_baseline(trace_event)
+        trace_policy = PolicyEngine(policy_version=trace_inv.policy_version)
+        trace_rec = trace_policy.decide(
+            event=trace_event,
+            baseline=trace_baseline,
+            findings=[trace_finding],
+            shadow_mode=settings.shadow_mode,
+        )
+
+        trace_gate = ContainmentGate(settings)
+        trace_proposal = ContainmentProposal(
+            action_type="temporary_hold",
+            target=trace_event.account_id,
+            reason_codes=list(trace_rec.reason_codes),
+            evidence_refs=[trace_finding.finding_id],
+            reversibility="reversible_within_24h",
+            proposed_by="correlator_agent",
+        )
+        trace_gate_result = trace_gate.evaluate(trace_proposal)
+
+        trace = {
+            "trace_id": i + 1,
+            "account_id": trace_event.account_id,
+            "event_type": trace_event.event_type.value,
+            "event_id": trace_event.event_id,
+            "investigation_id": trace_inv.investigation_id,
+            "agent_finding": trace_finding.conclusion,
+            "agent_confidence": trace_finding.confidence,
+            "baseline_triggered": trace_baseline.triggered,
+            "baseline_score": trace_baseline.score,
+            "recommendation": trace_rec.recommendation.value,
+            "reason_codes": trace_rec.reason_codes,
+            "containment_decision": trace_gate_result.decision.value,
+            "containment_executed": trace_gate_result.executed,
+            "policy_version": trace_rec.policy_version,
+            "model_version": trace_rec.model_version,
+        }
+        traces.append(trace)
+        audit.record_investigation_transition(
+            trace_inv, "closed", actor="system"
+        )
+        print(f"\n[trace {i + 1}] {trace_event.event_type.value} -> "
+              f"agent={trace_finding.conclusion} -> "
+              f"baseline={trace_baseline.triggered} -> "
+              f"policy={trace_rec.recommendation.value} -> "
+              f"containment={trace_gate_result.decision.value}")
+
+    trace_path = "trace_walkthroughs.json"
+    with open(trace_path, "w", encoding="utf-8") as f:
+        json.dump(traces, f, indent=2, default=str)
+    print(f"\n[trace] wrote {len(traces)} trace walkthroughs to {trace_path}")
+
+    # --- 9. Close investigation -------------------------------------------
     orchestrator.close(investigation.investigation_id)
     audit.record_investigation_transition(
         investigation, "closed", actor="system"
@@ -277,11 +451,13 @@ async def run_phase1(shadow_mode: Optional[bool] = None) -> int:
 
     # --- Summary ----------------------------------------------------------
     print("\n=== Phase 1 complete ===")
-    print(f"  Recommendation: {recommendation.recommendation.value} "
-          f"(shadow only — no action executed)")
-    print(f"  Containment:    {result.decision.value} "
+    print(f"  Recommendation (shared):  {recommendation_shared.recommendation.value}")
+    print(f"  Recommendation (no-meko): {recommendation_no_meko.recommendation.value}")
+    print(f"  Baseline score delta:     {baseline_diff:+.2f}")
+    print(f"  Containment:              {result.decision.value} "
           f"(no executable action path in Phase 1)")
-    print(f"  Audit log:      {audit.log_path}")
+    print(f"  Trace walkthroughs:       {len(traces)} written to {trace_path}")
+    print(f"  Audit log:                {audit.log_path}")
     print("\nNo production signals were sent. No containment/action credentials exist.")
     return 0
 

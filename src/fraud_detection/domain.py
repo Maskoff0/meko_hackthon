@@ -19,6 +19,7 @@ class EventType(str, Enum):
     DEVICE = "device"
     RESET = "reset"
     TRANSACTION = "transaction"
+    SUPPORT = "support"
 
 
 class InvestigationStatus(str, Enum):

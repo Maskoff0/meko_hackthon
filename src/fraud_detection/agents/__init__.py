@@ -10,6 +10,7 @@ from .login_agent import LoginAgent
 from .device_agent import DeviceAgent
 from .reset_agent import ResetAgent
 from .transaction_agent import TransactionAgent
+from .support_agent import SupportAgent
 from .correlator_agent import CorrelatorAgent
 
 __all__ = [
@@ -17,5 +18,6 @@ __all__ = [
     "DeviceAgent",
     "ResetAgent",
     "TransactionAgent",
+    "SupportAgent",
     "CorrelatorAgent",
 ]

@@ -1,0 +1,65 @@
+[
+  {
+    "trace_id": 1,
+    "account_id": "acct_1042",
+    "event_type": "login",
+    "event_id": "e692985f-945a-4230-ace0-983e2c5115c5",
+    "investigation_id": "ff047d05-dc40-4f14-8246-ec0cb4e624ff",
+    "agent_finding": "credential_stuffing_detected",
+    "agent_confidence": 0.8,
+    "baseline_triggered": false,
+    "baseline_score": 0.0,
+    "recommendation": "review",
+    "reason_codes": [
+      "failed_login_velocity",
+      "high_failure_rate",
+      "new_location"
+    ],
+    "containment_decision": "denied_shadow_mode",
+    "containment_executed": false,
+    "policy_version": "2026-11-v1",
+    "model_version": "deterministic-baseline-v1"
+  },
+  {
+    "trace_id": 2,
+    "account_id": "acct_1042",
+    "event_type": "device",
+    "event_id": "448d2cf8-b01f-48d8-a5b9-560bf171d6ed",
+    "investigation_id": "060655ca-2a14-4115-8601-1cb16ddd64a6",
+    "agent_finding": "suspicious_device",
+    "agent_confidence": 0.85,
+    "baseline_triggered": false,
+    "baseline_score": 0.25,
+    "recommendation": "review",
+    "reason_codes": [
+      "new_device",
+      "emulator_detected"
+    ],
+    "containment_decision": "denied_shadow_mode",
+    "containment_executed": false,
+    "policy_version": "2026-11-v1",
+    "model_version": "deterministic-baseline-v1"
+  },
+  {
+    "trace_id": 3,
+    "account_id": "acct_1042",
+    "event_type": "reset",
+    "event_id": "ee24c2d9-d576-48c9-9044-aae82ad04559",
+    "investigation_id": "93c3e2dc-d42c-4b8f-b469-468fbc09518f",
+    "agent_finding": "reset_after_failures_unusual_time",
+    "agent_confidence": 0.75,
+    "baseline_triggered": false,
+    "baseline_score": 0.35,
+    "recommendation": "review",
+    "reason_codes": [
+      "password_reset",
+      "device_reset_sequence",
+      "password_reset_after_failures",
+      "password_reset_unusual_time"
+    ],
+    "containment_decision": "denied_shadow_mode",
+    "containment_executed": false,
+    "policy_version": "2026-11-v1",
+    "model_version": "deterministic-baseline-v1"
+  }
+]

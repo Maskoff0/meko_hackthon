@@ -18,6 +18,7 @@ from .agents import (
     DeviceAgent,
     ResetAgent,
     TransactionAgent,
+    SupportAgent,
     CorrelatorAgent,
 )
 from .settings import Settings
@@ -49,4 +50,5 @@ __all__ = [
     "Orchestrator",
     "AuditLog",
     "ContainmentGate",
+    "SupportAgent",
 ]
