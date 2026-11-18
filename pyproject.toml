@@ -1,0 +1,18 @@
+[project]
+name = "meko-hackthon"
+version = "0.1.0"
+description = "A Python project for the meko hackthon."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "httpx>=0.27.1,<1.0.0",
+    "mcp>=1.0.0,<2.0.0",
+    "python-dotenv>=1.0.0",
+    "pydantic>=2.0.0,<3.0.0",
+]
+
+[project.scripts]
+fraud-detection = "fraud_detection.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
