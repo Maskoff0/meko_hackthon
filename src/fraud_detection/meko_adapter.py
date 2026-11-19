@@ -42,7 +42,7 @@ class MekoAdapter:
         try:
             async with streamable_http_client(
                 self.settings.meko_mcp_url, http_client=self._http_client
-            ) as (read, write, _):
+            ) as (read, write):
                 async with ClientSession(read, write) as session:
                     await session.initialize()
                     self._session = session
@@ -63,7 +63,7 @@ class MekoAdapter:
         args.setdefault("datapack_id", self.settings.meko_datapack_id)
         res = await session.call_tool(tool, args)
         text = "".join(c.text for c in res.content if isinstance(c, TextContent))
-        if res.isError:
+        if res.is_error:
             raise MekoAdapterError(
                 f"Meko MCP tool {tool!r} failed: {text or 'no error details'}"
             )

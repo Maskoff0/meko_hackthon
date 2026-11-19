@@ -28,7 +28,28 @@ from .baseline import BaselineEvaluator
 from .policy import PolicyEngine
 from .orchestration import Orchestrator
 from .audit import AuditLog
-from .containment import ContainmentGate
+from .containment import ContainmentGate, ContainmentDecision, ContainmentReviewDecision, ContainmentReview
+from .labeling import LabelIngestor, MaturityHorizon, DEFAULT_MATURITY_HORIZONS
+from .replay import ReplayHarness, RecordedDecisionReplay, ReplayRecord, ReplayResult
+from .metrics import (
+    MetricsEngine,
+    DetectionMetrics,
+    CostMetrics,
+    LatencyMetrics,
+    CohortMetrics,
+    BaselineLift,
+    wilson_score_interval,
+)
+from .triggers import TriggerEngine, TriggerType, TriggerRule, TriggerEvaluation
+from .storage import Storage
+from .stream import EventStream, StreamMessage, StreamSubscription
+from .outbox import Outbox, OutboxMessage, OutboxWorker
+from .monitoring import Monitor, Snapshot, SLOTarget
+
+from .storage import Storage
+from .stream import EventStream, StreamMessage, StreamSubscription
+from .outbox import Outbox, OutboxMessage, OutboxWorker
+from .monitoring import Monitor, Snapshot, SLOTarget
 
 __all__ = [
     "AccountEvent",
@@ -50,5 +71,36 @@ __all__ = [
     "Orchestrator",
     "AuditLog",
     "ContainmentGate",
+    "ContainmentDecision",
+    "ContainmentReviewDecision",
+    "ContainmentReview",
     "SupportAgent",
+    "LabelIngestor",
+    "MaturityHorizon",
+    "DEFAULT_MATURITY_HORIZONS",
+    "ReplayHarness",
+    "RecordedDecisionReplay",
+    "ReplayRecord",
+    "ReplayResult",
+    "MetricsEngine",
+    "DetectionMetrics",
+    "CostMetrics",
+    "LatencyMetrics",
+    "CohortMetrics",
+    "BaselineLift",
+    "wilson_score_interval",
+    "TriggerEngine",
+    "TriggerType",
+    "TriggerRule",
+    "TriggerEvaluation",
+    "Storage",
+    "EventStream",
+    "StreamMessage",
+    "StreamSubscription",
+    "Outbox",
+    "OutboxMessage",
+    "OutboxWorker",
+    "Monitor",
+    "Snapshot",
+    "SLOTarget",
 ]
