@@ -141,3 +141,78 @@ class AuditLog:
             "executed": False,
             "shadow_mode": True,
         })
+
+    def record_containment_review(
+        self,
+        account_id: str,
+        action_type: str,
+        target: str,
+        review_decision: str,
+        analyst_id: str,
+        analyst_reason: str,
+        evidence_refs: list[str],
+        evidence_snapshot: dict[str, Any],
+        review_id: str,
+    ) -> None:
+        """Record a human analyst's review decision on a containment proposal."""
+        self._write_entry({
+            "type": "containment_review",
+            "review_id": review_id,
+            "account_id": account_id,
+            "action_type": action_type,
+            "target": target,
+            "review_decision": review_decision,
+            "analyst_id": analyst_id,
+            "analyst_reason": analyst_reason,
+            "evidence_refs": evidence_refs,
+            "evidence_snapshot": evidence_snapshot,
+            "executed": False,
+        })
+
+    def record_containment_execution(
+        self,
+        account_id: str,
+        action_type: str,
+        target: str,
+        executed: bool,
+        analyst_id: str,
+        reason_codes: list[str],
+        evidence_refs: list[str],
+        review_id: str,
+        execution_reason: str,
+        executed_at: str | None = None,
+    ) -> None:
+        """Record the execution result of an analyst-approved containment proposal."""
+        self._write_entry({
+            "type": "containment_execution",
+            "review_id": review_id,
+            "account_id": account_id,
+            "action_type": action_type,
+            "target": target,
+            "executed": executed,
+            "analyst_id": analyst_id,
+            "reason_codes": reason_codes,
+            "evidence_refs": evidence_refs,
+            "execution_reason": execution_reason,
+            "executed_at": executed_at,
+        })
+
+    def record_phase2_gate_result(
+        self,
+        account_id: str,
+        investigation_id: str,
+        detection_metrics: dict[str, Any],
+        baseline_metrics: dict[str, Any],
+        latency_metrics: dict[str, Any],
+        gate_result: dict[str, Any],
+    ) -> None:
+        """Record Phase 2 gate evaluation results (baseline comparison + go/no-go)."""
+        self._write_entry({
+            "type": "phase2_gate_result",
+            "account_id": account_id,
+            "investigation_id": investigation_id,
+            "detection_metrics": detection_metrics,
+            "baseline_metrics": baseline_metrics,
+            "latency_metrics": latency_metrics,
+            "gate_result": gate_result,
+        })

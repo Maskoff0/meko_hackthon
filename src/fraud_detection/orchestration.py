@@ -4,9 +4,14 @@ Owns investigation state transitions, trigger deduplication, task assignment,
 permissions, deadlines, budgets, timeouts, retries, escalation, and terminal
 state. Can halt any investigation. Human reviewers can pause, resume, or
 reassign with an audit record.
+
+Phase 3 extension: investigations are persisted to durable storage via
+``Storage`` so state survives process restarts. On construction, the
+orchestrator can recover open investigations from storage.
 """
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Optional
@@ -19,6 +24,7 @@ from .domain import (
     InvestigationStatus,
 )
 from .baseline import BaselineEvaluator, BaselineResult
+from .storage import Storage
 
 
 @dataclass
@@ -45,13 +51,58 @@ class Orchestrator:
         default_meko_budget: int = 5,
         default_token_budget: int = 4000,
         default_deadline_seconds: int = 60,
+        storage: Optional[Storage] = None,
     ):
         self.baseline = baseline_evaluator or BaselineEvaluator()
         self.default_tool_budget = default_tool_budget
         self.default_meko_budget = default_meko_budget
         self.default_token_budget = default_token_budget
         self.default_deadline_seconds = default_deadline_seconds
+        self.storage = storage
         self._investigations: dict[str, InvestigationContext] = {}
+
+    def recover(self) -> int:
+        """Recover open investigations from durable storage.
+
+        Returns the number of investigations recovered. Investigations
+        in terminal states (closed, escalated) are not recovered into
+        active memory but remain in storage.
+        """
+        if self.storage is None:
+            return 0
+        rows = self.storage.get_open_investigations()
+        count = 0
+        for row in rows:
+            inv = Investigation(
+                investigation_id=row["investigation_id"],
+                account_id=row["account_id"],
+                trigger_event_id=row["trigger_event_id"],
+                trigger_type=row["trigger_type"],
+                hypothesis=row["hypothesis"],
+                status=InvestigationStatus(row["status"]),
+                policy_version=row["policy_version"],
+                allowed_tools=json_loads(row["allowed_tools"]),
+                evidence_scopes=json_loads(row["evidence_scopes"]),
+                tool_call_budget=row["tool_call_budget"],
+                meko_retrieval_budget=row["meko_retrieval_budget"],
+                token_budget=row["token_budget"],
+                wall_clock_deadline_seconds=row["wall_clock_deadline_seconds"],
+                created_at=parse_iso(row["created_at"]),
+                updated_at=parse_iso(row["updated_at"]),
+                error=row["error"],
+                findings=[],  # findings reloaded separately below
+            )
+            # Reload findings for this investigation
+            finding_rows = self.storage.get_findings_for_investigation(inv.investigation_id)
+            # Findings are stored but we don't reconstruct EvidenceFinding objects
+            # here; they are available via storage for audit/replay purposes.
+            ctx = InvestigationContext(
+                investigation=inv,
+                started_at=inv.created_at,
+            )
+            self._investigations[inv.investigation_id] = ctx
+            count += 1
+        return count
 
     def create_investigation(
         self,
@@ -59,7 +110,7 @@ class Orchestrator:
         trigger_type: str,
         hypothesis: str,
     ) -> Investigation:
-        """Create a bounded investigation task."""
+        """Create a bounded investigation task and persist it."""
         investigation = Investigation(
             account_id=event.account_id,
             trigger_event_id=event.event_id,
@@ -77,17 +128,48 @@ class Orchestrator:
             started_at=datetime.now(timezone.utc),
         )
         self._investigations[investigation.investigation_id] = ctx
+        if self.storage is not None:
+            self.storage.insert_investigation(investigation)
         return investigation
 
     def get_investigation(self, investigation_id: str) -> Optional[InvestigationContext]:
-        return self._investigations.get(investigation_id)
+        # Fall back to storage if not in memory
+        ctx = self._investigations.get(investigation_id)
+        if ctx is not None:
+            return ctx
+        if self.storage is not None:
+            row = self.storage.get_investigation(investigation_id)
+            if row is not None:
+                inv = Investigation(
+                    investigation_id=row["investigation_id"],
+                    account_id=row["account_id"],
+                    trigger_event_id=row["trigger_event_id"],
+                    trigger_type=row["trigger_type"],
+                    hypothesis=row["hypothesis"],
+                    status=InvestigationStatus(row["status"]),
+                    policy_version=row["policy_version"],
+                    allowed_tools=json_loads(row["allowed_tools"]),
+                    evidence_scopes=json_loads(row["evidence_scopes"]),
+                    tool_call_budget=row["tool_call_budget"],
+                    meko_retrieval_budget=row["meko_retrieval_budget"],
+                    token_budget=row["token_budget"],
+                    wall_clock_deadline_seconds=row["wall_clock_deadline_seconds"],
+                    created_at=parse_iso(row["created_at"]),
+                    updated_at=parse_iso(row["updated_at"]),
+                    error=row["error"],
+                    findings=[],
+                )
+                ctx = InvestigationContext(investigation=inv, started_at=inv.created_at)
+                self._investigations[investigation_id] = ctx
+                return ctx
+        return None
 
     def add_finding(
         self,
         investigation_id: str,
         finding: EvidenceFinding,
     ) -> bool:
-        """Add a typed finding to the investigation record."""
+        """Add a typed finding to the investigation record and persist it."""
         ctx = self._investigations.get(investigation_id)
         if ctx is None or ctx.halted:
             return False
@@ -95,6 +177,9 @@ class Orchestrator:
         ctx.investigation.findings.append(finding.finding_id)
         ctx.investigation.status = InvestigationStatus.ASSESSING
         ctx.investigation.updated_at = datetime.now(timezone.utc)
+        if self.storage is not None:
+            self.storage.insert_finding(finding)
+            self.storage.insert_investigation(ctx.investigation)
         return True
 
     def check_budget(self, investigation_id: str) -> tuple[bool, Optional[str]]:
@@ -133,6 +218,8 @@ class Orchestrator:
             ctx.halted = True
             ctx.investigation.status = InvestigationStatus.CLOSED
             ctx.investigation.error = reason
+            if self.storage is not None:
+                self.storage.insert_investigation(ctx.investigation)
         return ok
 
     def record_meko_retrieval(self, investigation_id: str) -> bool:
@@ -146,6 +233,8 @@ class Orchestrator:
             ctx.halted = True
             ctx.investigation.status = InvestigationStatus.CLOSED
             ctx.investigation.error = reason
+            if self.storage is not None:
+                self.storage.insert_investigation(ctx.investigation)
         return ok
 
     def record_tokens(self, investigation_id: str, count: int) -> bool:
@@ -159,6 +248,8 @@ class Orchestrator:
             ctx.halted = True
             ctx.investigation.status = InvestigationStatus.CLOSED
             ctx.investigation.error = reason
+            if self.storage is not None:
+                self.storage.insert_investigation(ctx.investigation)
         return ok
 
     def halt(self, investigation_id: str, reason: str) -> bool:
@@ -170,6 +261,8 @@ class Orchestrator:
         ctx.investigation.status = InvestigationStatus.CLOSED
         ctx.investigation.error = reason
         ctx.investigation.updated_at = datetime.now(timezone.utc)
+        if self.storage is not None:
+            self.storage.insert_investigation(ctx.investigation)
         return True
 
     def close(self, investigation_id: str) -> bool:
@@ -179,6 +272,8 @@ class Orchestrator:
             return False
         ctx.investigation.status = InvestigationStatus.CLOSED
         ctx.investigation.updated_at = datetime.now(timezone.utc)
+        if self.storage is not None:
+            self.storage.insert_investigation(ctx.investigation)
         return True
 
     def escalate(self, investigation_id: str) -> bool:
@@ -188,8 +283,30 @@ class Orchestrator:
             return False
         ctx.investigation.status = InvestigationStatus.ESCALATED
         ctx.investigation.updated_at = datetime.now(timezone.utc)
+        if self.storage is not None:
+            self.storage.insert_investigation(ctx.investigation)
         return True
 
     def evaluate_baseline(self, event: AccountEvent) -> BaselineResult:
         """Run the deterministic baseline against an event."""
         return self.baseline.evaluate(event)
+
+
+def json_loads(value: str | None) -> list:
+    """Safely parse a JSON list from storage."""
+    if not value:
+        return []
+    try:
+        return json.loads(value)
+    except (json.JSONDecodeError, TypeError):
+        return []
+
+
+def parse_iso(value: str | None) -> Optional[datetime]:
+    """Parse an ISO-8601 datetime string."""
+    if not value:
+        return None
+    try:
+        return datetime.fromisoformat(value)
+    except ValueError:
+        return None

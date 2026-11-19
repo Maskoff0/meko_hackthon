@@ -165,17 +165,50 @@ Production signals remain gated on explicit privacy/security approval. Challenge
 
 ### Phase 4 — Human approval
 
-- Build a case queue with evidence timeline, reason codes, model/rule versions, label state, investigation status, assignment, and escalation — **per challenge.md: reason codes, evidence provenance**.
-- Add authenticated role-based access, least privilege, separation of duties, and complete audit records for approve, reject, override, expire, and reassignment — **per challenge.md: audit records**.
-- Let the correlator submit a typed containment proposal (action type, target, reason codes, evidence references, reversibility, and expiry) — **per challenge.md: proposal ≠ authority**.
-- Treat it as a request only; never let agent output invoke the action adapter directly — **per challenge.md: proposal ≠ authority**.
-- Revalidate case version, policy stage, proposal evidence, permissions, and action eligibility at approval and execution time; use idempotency to prevent duplicate approvals/actions — **per challenge.md: fresh checks at execution**.
-- Start with a sandbox containment service. Require explicit human authorization and record the actor, scope, expiry, policy version, exact action requested, outcome, and customer recourse path — **per challenge.md: human authorization**.
-- Collect structured analyst labels and disagreement reasons. Review and adjudicate feedback; do not auto-promote a disposition into shared knowledge — **per challenge.md: analyst feedback → independent review → adjudication**.
+**Status: core containment gate implemented; approval queue and executor deferred.**
 
-**Tests**: permissions and per-agent scopes; pause/resume/reassignment; stale/racing approvals; duplicate submission; proposal is not authorization; re-check at execution; expiry; analyst override; audit integrity; containment sandbox; notification failures; appeal/escalation.
+The containment gate (`src/fraud_detection/containment.py`) now enforces the
+proposal ≠ authority boundary with human-in-the-loop:
 
-**Exit**: all actions are explicitly approved, scoped, attributable, auditable, and reversible or have a documented customer-remedy path.
+- `ContainmentGate.evaluate(proposal)` — validates gates (shadow mode off,
+  credentials configured, action allowlisted) → `PROPOSED` or denied.
+- `ContainmentGate.review(proposal, decision, analyst_id, reason)` — human
+  analyst approves, rejects, or escalates. Recorded in the audit log.
+- `ContainmentGate.execute(proposal, analyst_id)` — re-validates at execution
+  time: shadow mode off, credentials present, action allowlisted, human
+  approval present, idempotency (duplicate execution rejected).
+- Audit logging: `containment_proposal`, `containment_review`,
+  `containment_execution` entries appended to `audit.log`.
+- Immediate next-step demo: `demo_human_in_loop.py` walks through the full
+  flow with a simulated analyst decision.
+
+**Still to build (deferred to Phase 4 follow-up):**
+
+- Build a case queue with evidence timeline, reason codes, model/rule
+  versions, label state, investigation status, assignment, and escalation —
+  **per challenge.md: reason codes, evidence provenance**.
+- Add authenticated role-based access, least privilege, separation of duties,
+  and complete audit records for approve, reject, override, expire, and
+  reassignment — **per challenge.md: audit records**.
+- Treat the correlator/MCP-client proposal as a request only; never let
+  agent output invoke the action adapter directly — **per challenge.md:
+  proposal ≠ authority**.
+- Start with a sandbox containment service. Require explicit human
+  authorization and record the actor, scope, expiry, policy version, exact
+  action requested, outcome, and customer recourse path — **per challenge.md:
+  human authorization**.
+- Collect structured analyst labels and disagreement reasons. Review and
+  adjudicate feedback; do not auto-promote a disposition into shared
+  knowledge — **per challenge.md: analyst feedback → independent review →
+  adjudication**.
+
+**Tests**: permissions and per-agent scopes; pause/resume/reassignment;
+stale/racing approvals; duplicate submission; proposal is not authorization;
+re-check at execution; expiry; analyst override; audit integrity;
+containment sandbox; notification failures; appeal/escalation.
+
+**Exit**: all actions are explicitly approved, scoped, attributable, auditable,
+and reversible or have a documented customer-remedy path.
 
 ### Phase 5 — Limited reversible automation
 
