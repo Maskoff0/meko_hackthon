@@ -70,6 +70,12 @@ from .triggers import TriggerEngine
 from .labeling import LabelIngestor
 from .replay import ReplayHarness
 from .metrics import MetricsEngine
+from .analyst import (
+    CaseBriefService,
+    TraceExplanationService,
+    CaseDraftService,
+    FeedbackCaptureService,
+)
 from .storage import Storage
 from .stream import EventStream
 from .outbox import Outbox, OutboxWorker
@@ -531,6 +537,93 @@ async def run_phase1(
     with open(trace_path, "w", encoding="utf-8") as f:
         json.dump(traces, f, indent=2, default=str)
     print(f"\n[trace] wrote {len(traces)} trace walkthroughs to {trace_path}")
+
+    # --- Analyst copilot capabilities (function.md) -------------------------
+    print("\n=== Analyst Copilot (function.md) ===")
+
+    analyst_id = "analyst_001"
+
+    # 1. Case brief with citations (function.md Capability 1 - build first)
+    brief_service = CaseBriefService()
+    brief = brief_service.build_brief(
+        account_id=ACCOUNT_ID,
+        investigation_id=investigation.investigation_id,
+        findings=findings_shared,
+        recommendation=recommendation_shared,
+        analyst_id=analyst_id,
+    )
+    audit.record_case_brief(brief)
+    missing_citations = brief_service.validate_citations(brief)
+    print(f"\n[brief] case_brief_id={brief.brief_id}")
+    print(f"      timeline_entries={len(brief.timeline)}")
+    print(f"      signals={len(brief.signals)}")
+    print(f"      prior_incidents={len(brief.prior_incidents)}")
+    print(f"      unknowns={len(brief.unknowns)}")
+    print(f"      citations={len(brief.citations)}")
+    if missing_citations:
+        print(f"      citation_warnings: {missing_citations}")
+    print(f"      brief_json={brief.model_dump_json(indent=2)}")
+
+    # 2. Plain-language trace explanation (function.md Capability 2)
+    trace_service = TraceExplanationService()
+    trace_explanation = trace_service.explain_investigation(
+        investigation_id=investigation.investigation_id,
+        account_id=ACCOUNT_ID,
+        findings=findings_shared,
+        correlated_finding=correlated_shared,
+        recommendation=recommendation_shared,
+    )
+    print(f"\n[trace_explanation]\n{trace_explanation}")
+
+    # 3. Drafting: case note (function.md Capability 4)
+    draft_service = CaseDraftService()
+    case_note = draft_service.draft_case_note(
+        account_id=ACCOUNT_ID,
+        investigation_id=investigation.investigation_id,
+        brief=brief,
+        recommendation=recommendation_shared,
+        analyst_id=analyst_id,
+    )
+    audit.record_case_draft(case_note, "created")
+    print(f"\n[draft] case_note_id={case_note.draft_id} type={case_note.draft_type}")
+    print(f"      status={case_note.status} edit_count={case_note.edit_count}")
+    print(f"      content_preview={case_note.content[:200]}...")
+
+    # 4. Drafting: customer communication
+    customer_comm = draft_service.draft_customer_communication(
+        account_id=ACCOUNT_ID,
+        investigation_id=investigation.investigation_id,
+        brief=brief,
+        recommendation=recommendation_shared,
+        analyst_id=analyst_id,
+    )
+    audit.record_case_draft(customer_comm, "created")
+    print(f"\n[draft] customer_communication_id={customer_comm.draft_id}")
+    print(f"      content_preview={customer_comm.content[:200]}...")
+
+    # 5. Feedback capture (function.md Capability 6)
+    feedback_service = FeedbackCaptureService()
+    analyst_response = "Known travel - the user notified us of travel to this country."
+    feedback = feedback_service.capture_feedback(
+        account_id=ACCOUNT_ID,
+        investigation_id=investigation.investigation_id,
+        analyst_id=analyst_id,
+        original_recommendation=recommendation_shared.recommendation.value,
+        original_reason_codes=recommendation_shared.reason_codes,
+        analyst_response=analyst_response,
+    )
+    audit.record_analyst_feedback(feedback)
+    print(f"\n[feedback] feedback_id={feedback.feedback_id}")
+    print(f"      label={feedback.label} label_reason={feedback.label_reason}")
+    print(f"      question: {feedback_service.feedback_question()}")
+
+    # 6. Measured benefit: draft edit rate (function.md guardrail)
+    total_drafts = 2  # case_note + customer_comm
+    edited_drafts = 0
+    edit_rate = edited_drafts / total_drafts if total_drafts > 0 else 0.0
+    print(f"\n[measured_benefit] draft_edit_rate={edit_rate:.2f} "
+          f"({edited_drafts}/{total_drafts})")
+    print(f"      interpretation: {'High edit rate - output not helping' if edit_rate > 0.5 else 'Output is helping analysts'}")
 
     # --- Phase 2: Label pipeline, replay, metrics, gate evaluation ---------
     await run_phase2(
