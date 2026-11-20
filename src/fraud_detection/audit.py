@@ -11,7 +11,16 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from .domain import AccountEvent, Investigation, EvidenceFinding, ShadowRecommendation
+from .domain import (
+    AccountEvent,
+    CaseBrief,
+    CaseDraft,
+    Investigation,
+    EvidenceFinding,
+    ShadowRecommendation,
+    TriageQueueItem,
+    AnalystFeedback,
+)
 
 
 class AuditLog:
@@ -215,4 +224,74 @@ class AuditLog:
             "baseline_metrics": baseline_metrics,
             "latency_metrics": latency_metrics,
             "gate_result": gate_result,
+        })
+
+    def record_case_brief(
+        self,
+        brief: CaseBrief,
+    ) -> None:
+        """Record a case brief generation (function.md: logging with analyst ID)."""
+        self._write_entry({
+            "type": "case_brief",
+            "brief_id": brief.brief_id,
+            "account_id": brief.account_id,
+            "investigation_id": brief.investigation_id,
+            "analyst_id": brief.analyst_id,
+            "generated_at": brief.generated_at.isoformat(),
+            "timeline_entries": len(brief.timeline),
+            "signals": len(brief.signals),
+            "prior_incidents": len(brief.prior_incidents),
+            "citations": brief.citations,
+        })
+
+    def record_case_draft(
+        self,
+        draft: CaseDraft,
+        action: str,
+    ) -> None:
+        """Record a case draft creation/edit/sign (function.md: logging with analyst ID)."""
+        self._write_entry({
+            "type": "case_draft",
+            "draft_id": draft.draft_id,
+            "account_id": draft.account_id,
+            "investigation_id": draft.investigation_id,
+            "analyst_id": draft.analyst_id,
+            "draft_type": draft.draft_type,
+            "status": draft.status,
+            "action": action,
+            "edit_count": draft.edit_count,
+            "citations": draft.citations,
+        })
+
+    def record_triage_view(
+        self,
+        queue_item: TriageQueueItem,
+        analyst_id: str,
+    ) -> None:
+        """Record an analyst viewing a triage queue item."""
+        self._write_entry({
+            "type": "triage_view",
+            "investigation_id": queue_item.investigation_id,
+            "account_id": queue_item.account_id,
+            "analyst_id": analyst_id,
+            "rank": queue_item.rank,
+            "score": queue_item.score,
+            "recommendation": queue_item.recommendation,
+        })
+
+    def record_analyst_feedback(
+        self,
+        feedback: AnalystFeedback,
+    ) -> None:
+        """Record analyst feedback capture (function.md: Capability 6)."""
+        self._write_entry({
+            "type": "analyst_feedback",
+            "feedback_id": feedback.feedback_id,
+            "account_id": feedback.account_id,
+            "investigation_id": feedback.investigation_id,
+            "analyst_id": feedback.analyst_id,
+            "original_recommendation": feedback.original_recommendation,
+            "analyst_response": feedback.analyst_response,
+            "label": feedback.label,
+            "label_reason": feedback.label_reason,
         })

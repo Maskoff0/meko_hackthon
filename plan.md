@@ -6,6 +6,8 @@ This plan evolves the current Meko MCP demo into a fraud-detection service in st
 
 **Challenge.md alignment**: All objectives (share signals, connect the dots, remember past attacks, explain decisions), Meko features (collective memory, hybrid retrieval, knowledge base, decision traces, separate datapacks), and expected outcomes (synthetic stream, multi-agent detection, trace walkthroughs, baseline comparison) are the primary drivers of implementation scope and exit criteria.
 
+**function.md alignment**: The analyst copilot capabilities defined in function.md (case briefs with citations, trace explanation, pattern lookup, drafting not deciding, triage ordering, feedback capture, measured benefit) complement the back-end detection pipeline. They consume the pipeline's traces, findings, and recommendations and turn them into analyst efficiency. function.md explicitly directs that the case brief with citations — delivered through the MCP server — be built first.
+
 Meko memory writes and context searches are real hosted service operations, but they do not execute fraud containment. The prototype can produce only non-actionable recommendations or shadow results; containment/action credentials and execution remain disabled until a later phase receives its own approvals and passes its gates. Each authority increase is a separate release decision. A completed phase does not automatically enable the next one.
 
 ## What exists today
@@ -44,6 +46,20 @@ Keep boundaries small and explicit. Avoid choosing a cloud, database, queue, or 
 9. **Approval and containment boundaries** — an agent may submit a structured containment proposal, but that proposal is not authorization. A separate containment service re-checks current policy stage, permissions, action allowlist, kill switch, idempotency, and audit requirements before execution. Human approval is required in that stage; later automation is limited to fraud-owner-approved, reversible actions. **Challenge alignment**: Objective 4 (explain every decision); Implementer Note: agents propose; policy decides.
 
 10. **Operations and evaluation** — dashboards, SLOs, alerting, label maturation, offline replay, drift monitoring, cost/budget tracking, incident response, and controlled rollout. **Challenge alignment**: Expected Outcomes 2-4; Metrics: precision, recall, alert volume, missed-fraud cost, customer friction, abstention rate, label coverage/maturity, baseline-relative lift.
+
+11. **Case briefs on demand** — when an analyst opens an investigation, generate a one-screen brief from the decision log and Meko context: ordered timeline with source systems, signals driving the score with per-agent confidence, matching prior incidents (with incident IDs), and what's still unknown. Every claim cites an event ID or trace ID; no citation, no claim. Delivered through the MCP server. **function.md**: Capability 1 (build first).
+
+12. **Trace explanation** — translate agent traces into plain language for analysts (e.g., "step-up triggered because the login came from a new device two hours after 40 failed attempts from a related IP"). Raw trace stays the record of truth. **function.md**: Capability 2.
+
+13. **Pattern lookup** — run hybrid retrieval against the knowledge base and past confirmed cases to surface what's similar and what's different. Meko search does the work; output is presented to the analyst. **function.md**: Capability 3.
+
+14. **Drafting, not deciding** — draft case notes, customer communications, and regulator-facing explanations. The analyst edits and signs. Drafts are stored as drafts, never as the official record. **function.md**: Capability 4.
+
+15. **Triage ordering** — summarize the queue and explain why an investigation is ranked high, using the score and the signals behind it. The ranking itself stays with deterministic scoring logic. **function.md**: Capability 5.
+
+16. **Feedback capture** — when an analyst disagrees with a recommendation, ask one structured question ("why?"). The answer becomes a labelled outcome (e.g., "false positive: known travel") feeding the detection feedback loop. **function.md**: Capability 6.
+
+17. **Measured benefit** — track time from case open to decision and the rate at which analysts edit Claude's drafts. A high edit rate means the output isn't helping. **function.md**: Capability 7 / Guardrails.
 
 ## Ground truth, metrics, and promotion gates
 
@@ -110,6 +126,10 @@ Also report precision, recall, alert volume, missed-fraud cost, customer frictio
 
 10. **Trace walkthroughs**: Produce at least 3 end-to-end decision traces, each documenting: event ingest → agent findings → Meko retrieval → baseline evaluation → policy decision → audit log entry → containment gate verdict. **Challenge alignment**: Expected Outcome 3 (trace walkthroughs).
 
+11. **Case briefs on demand** — build first per function.md. Generate a one-screen case brief from the decision log and Meko context delivered through the MCP server: ordered timeline with source systems, signals driving the score with per-agent confidence, matching prior incidents (with incident IDs), and what's still unknown. Every claim cites an event ID or trace ID; no citation, no claim. **function.md**: Capability 1.
+
+12. **Plain-language trace explanation** — translate agent traces into analyst-readable plain language while keeping the raw trace as the record of truth. **function.md**: Capability 2.
+
 **Extract the current script into a modest package**, for example:
 
 ```
@@ -123,19 +143,22 @@ src/fraud_detection/
     meko_adapter.py   # MCP transport and tool contracts (challenge.md: all 5 Meko features; enrichment only)
     audit.py          # append-only decision record interface (challenge.md: audit record of truth; Meko supplementary)
     containment.py    # proposal validation and separately gated execution (challenge.md: proposal ≠ authority)
+    analyst.py        # analyst copilot: case briefs, trace explanation, pattern lookup, drafting, triage, feedback (function.md)
+    mcp_server.py     # MCP server exposing analyst capabilities (function.md: case brief via MCP server)
     settings.py       # validated configuration and secret loading (challenge.md: Meko API key + datapack ID)
     cli.py            # local fixture/replay entry point (challenge.md: Phase 1 end-to-end flow)
 tests/
     unit/
     contract/
     replay/
+    analyst/
 ```
 
-**Phase 1 exit criteria** (anchored to challenge.md):
+**Phase 1 exit criteria** (anchored to challenge.md and function.md):
 
-One synthetic or approved de-identified login/device/reset/transaction flow runs end-to-end through event trigger → bounded scoped tasks → structured handoffs → real hosted Meko write/retrieval → reproducible non-actionable shadow recommendation → baseline comparison (shared vs. no shared memory) → ≥3 trace walkthroughs → audit log verified. **No containment/action credential or executable action path exists.**
+One synthetic or approved de-identified login/device/reset/transaction flow runs end-to-end through event trigger → bounded scoped tasks → structured handoffs → real hosted Meko write/retrieval → reproducible non-actionable shadow recommendation → baseline comparison (shared vs. no shared memory) → ≥3 trace walkthroughs → case brief with citations → plain-language trace explanation → audit log verified. **No containment/action credential or executable action path exists.**
 
-Production signals remain gated on explicit privacy/security approval. Challenge.md's implementer notes are enforced in code: signal contents as untrusted data, append-only audit log as record of truth, agents propose; deterministic policy decides.
+Production signals remain gated on explicit privacy/security approval. Challenge.md's implementer notes are enforced in code: signal contents as untrusted data, append-only audit log as record of truth, agents propose; deterministic policy decides. function.md guardrails are enforced: read-only by default, cited claims, untrusted text marked as data, logging with analyst ID, measured benefit tracked.
 
 ### Phase 2 — Evaluation and label pipeline
 
@@ -146,6 +169,7 @@ Production signals remain gated on explicit privacy/security approval. Challenge
 - Pin the model/provider identifier and prompt/template version. Persist exact privacy-approved input snapshots or immutable references, retrieved evidence identifiers, tool versions, output, and decision versions — **per challenge.md: pinned versions, immutable references**.
 - Replay recorded decisions against the recorded outputs/inputs for audit. Do not expect a fresh LLM invocation to produce identical text or results; evaluate fresh runs as new experiments — **per challenge.md: fresh runs are new experiments**.
 - Report metrics, confidence intervals, cohort slices, alert volume, false-positive/missed-fraud costs, lead time, latency, and baseline-relative lift — **per challenge.md: metrics report**.
+- Track analyst-efficiency metrics: time from case open to decision, and draft edit rate (how often analysts edit the copilot's drafts). A high edit rate means the output isn't helping. **function.md**: Guardrails / measured benefit.
 
 **Tests**: label-source disagreement and maturity; leakage checks; repeatable deterministic baseline; recorded-decision replay; model/prompt version changes; metrics against hand-calculated fixtures; confidence/sample-size behavior.
 
@@ -157,6 +181,7 @@ Production signals remain gated on explicit privacy/security approval. Challenge
 - Persist events, investigation tasks/transitions, structured handoffs, cases, labels, recommendations, and the append-only audit log independently of Meko — **per challenge.md: audit record of truth; Meko supplementary**.
 - Use an outbox or equivalent reliable delivery for Meko enrichment; subscribe agents to the durable stream rather than polling Meko or other agents. Correlate only at configured triggers. Handle retries, budgets, rate limits, backpressure, dead letters, and provider outages explicitly — **per challenge.md: Meko behind adapter/interface; provider-exit path**.
 - Run shadow mode beside existing controls. Generate alerts for analyst review but do not alter transactions or customer access — **per challenge.md: shadow mode; no action execution**.
+- Provide triage ordering for analysts: summarize the queue and explain why an investigation is ranked high, using the score and signals behind it. The ranking itself stays with deterministic scoring logic. **function.md**: Capability 5.
 - Monitor ingestion lag, duplicates, missing features, Meko latency/searchability, decision latency, errors, alert volume, label coverage, drift, and baseline-relative performance — **per challenge.md: dashboards, SLOs, alerting**.
 
 **Tests**: restart/crash recovery; duplicate and out-of-order event delivery; trigger deduplication; investigation resume after restart; replay/backfill; task budget enforcement; storage migration and restore; stream redelivery; provider timeout/outage; rate limiting; access isolation; deletion/retention; latency and load.
@@ -201,6 +226,11 @@ proposal ≠ authority boundary with human-in-the-loop:
   adjudicate feedback; do not auto-promote a disposition into shared
   knowledge — **per challenge.md: analyst feedback → independent review →
   adjudication**.
+- Implement feedback capture: when an analyst disagrees with a
+  recommendation, ask one structured question ("why?"). The answer becomes
+  a labelled outcome (e.g., "false positive: known travel") feeding the
+  detection feedback loop that improves detection quality over time.
+  **function.md**: Capability 6.
 
 **Tests**: permissions and per-agent scopes; pause/resume/reassignment;
 stale/racing approvals; duplicate submission; proposal is not authorization;
@@ -282,6 +312,14 @@ and reversible or have a documented customer-remedy path.
 - Maintain an application-owned append-only log for input references, labels, policy/model versions, decisions, approvals, action requests/results, and corrections.
 - Make audit writes durable before consequential state transitions; define and test what happens if audit persistence is unavailable.
 - Treat Meko memories and trace artifacts as supplementary observability/context only. They are mutable and may be delayed or deleted; they cannot be the authoritative record.
+
+### Analyst copilot guardrails
+
+- **Read-only by default.** The analyst copilot can create pending requests and drafts, but it cannot approve containment or write to the official record.
+- **Cited claims.** Every factual claim in an analyst-facing output (brief, explanation, draft) cites a source ID. If it can't be cited, it doesn't go in the output.
+- **Untrusted text.** Attacker-controlled text (payee names, support messages) is marked as data so it cannot steer the brief, explanation, or draft.
+- **Logging.** Every brief and draft generation is logged with the analyst ID.
+- **Measured benefit.** Track time from case open to decision, and the rate at which analysts edit Claude's drafts. A high edit rate means the output isn't helping.
 
 ### Feedback and shared-knowledge governance
 
