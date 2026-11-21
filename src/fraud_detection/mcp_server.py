@@ -265,6 +265,55 @@ async def lookup_patterns(
 
 
 # ---------------------------------------------------------------------------
+# Tool: query_knowledge (knowledge base search)
+# ---------------------------------------------------------------------------
+
+@server.tool()
+async def query_knowledge(
+    query: str,
+    limit: int = 10,
+) -> str:
+    """Search the Meko knowledge base for fraud playbooks and risk rules.
+
+    Uses context_search with force_source="knowledge_base" to retrieve
+    indexed KB documents relevant to the query.
+    """
+    meko = MekoAdapter(settings)
+    async with meko.connect() as session:
+        result = await session.call(
+            "context_search",
+            query=query,
+            force_source="knowledge_base",
+            limit=limit,
+            agent_id="analyst_knowledge_query",
+        )
+    return json.dumps(result, indent=2)
+
+
+# ---------------------------------------------------------------------------
+# Tool: get_artifact (artifact retrieval by hash)
+# ---------------------------------------------------------------------------
+
+@server.tool()
+async def get_artifact(
+    artifact_hash: str,
+) -> str:
+    """Retrieve an artifact from the Meko datapack by its content hash.
+
+    Returns the file's contents. Files under 1 MB return contents directly;
+    files 1 MB or more return a path to the file in object storage.
+    Each retrieval resets the artifact's expiry clock.
+    """
+    meko = MekoAdapter(settings)
+    async with meko.connect() as session:
+        result = await session.artifact_get(
+            artifact_hash=artifact_hash,
+            agent_id="analyst_artifact_get",
+        )
+    return json.dumps(result, indent=2)
+
+
+# ---------------------------------------------------------------------------
 # Tool: draft_case_note (function.md Capability 4)
 # ---------------------------------------------------------------------------
 

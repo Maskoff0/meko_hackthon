@@ -12,6 +12,7 @@ orchestrator can recover open investigations from storage.
 from __future__ import annotations
 
 import json
+import uuid
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Optional
@@ -36,6 +37,7 @@ class InvestigationContext:
     findings: list[EvidenceFinding] = field(default_factory=list)
     tool_calls_used: int = 0
     meko_retrievals_used: int = 0
+    meko_retrieval_content_tokens_used: int = 0
     tokens_used: int = 0
     started_at: Optional[datetime] = None
     halted: bool = False
@@ -50,6 +52,7 @@ class Orchestrator:
         default_tool_budget: int = 10,
         default_meko_budget: int = 5,
         default_token_budget: int = 4000,
+        default_meko_content_token_budget: int = 500,
         default_deadline_seconds: int = 60,
         storage: Optional[Storage] = None,
     ):
@@ -57,6 +60,7 @@ class Orchestrator:
         self.default_tool_budget = default_tool_budget
         self.default_meko_budget = default_meko_budget
         self.default_token_budget = default_token_budget
+        self.default_meko_content_token_budget = default_meko_content_token_budget
         self.default_deadline_seconds = default_deadline_seconds
         self.storage = storage
         self._investigations: dict[str, InvestigationContext] = {}
@@ -85,6 +89,7 @@ class Orchestrator:
                 evidence_scopes=json_loads(row["evidence_scopes"]),
                 tool_call_budget=row["tool_call_budget"],
                 meko_retrieval_budget=row["meko_retrieval_budget"],
+                meko_retrieval_content_token_budget=row["meko_retrieval_content_token_budget"],
                 token_budget=row["token_budget"],
                 wall_clock_deadline_seconds=row["wall_clock_deadline_seconds"],
                 created_at=parse_iso(row["created_at"]),
@@ -120,8 +125,10 @@ class Orchestrator:
             evidence_scopes=["account_signals", "knowledge_base"],
             tool_call_budget=self.default_tool_budget,
             meko_retrieval_budget=self.default_meko_budget,
+            meko_retrieval_content_token_budget=self.default_meko_content_token_budget,
             token_budget=self.default_token_budget,
             wall_clock_deadline_seconds=self.default_deadline_seconds,
+            trace_id=str(uuid.uuid4()),
         )
         ctx = InvestigationContext(
             investigation=investigation,
@@ -152,11 +159,13 @@ class Orchestrator:
                     evidence_scopes=json_loads(row["evidence_scopes"]),
                     tool_call_budget=row["tool_call_budget"],
                     meko_retrieval_budget=row["meko_retrieval_budget"],
+                    meko_retrieval_content_token_budget=row["meko_retrieval_content_token_budget"],
                     token_budget=row["token_budget"],
                     wall_clock_deadline_seconds=row["wall_clock_deadline_seconds"],
                     created_at=parse_iso(row["created_at"]),
                     updated_at=parse_iso(row["updated_at"]),
                     error=row["error"],
+                    trace_id=row["trace_id"],
                     findings=[],
                 )
                 ctx = InvestigationContext(investigation=inv, started_at=inv.created_at)
@@ -196,6 +205,8 @@ class Orchestrator:
             return False, "tool_call_budget_exhausted"
         if ctx.meko_retrievals_used >= inv.meko_retrieval_budget:
             return False, "meko_retrieval_budget_exhausted"
+        if ctx.meko_retrieval_content_tokens_used >= inv.meko_retrieval_content_token_budget:
+            return False, "meko_retrieval_content_token_budget_exhausted"
         if ctx.tokens_used >= inv.token_budget:
             return False, "token_budget_exhausted"
 
@@ -228,6 +239,29 @@ class Orchestrator:
         if ctx is None or ctx.halted:
             return False
         ctx.meko_retrievals_used += 1
+        ok, reason = self.check_budget(investigation_id)
+        if not ok:
+            ctx.halted = True
+            ctx.investigation.status = InvestigationStatus.CLOSED
+            ctx.investigation.error = reason
+            if self.storage is not None:
+                self.storage.insert_investigation(ctx.investigation)
+        return ok
+
+    def record_meko_retrieval_content_tokens(
+        self, investigation_id: str, count: int
+    ) -> bool:
+        """Record Meko retrieval content token usage against the budget.
+
+        Tracks the token size of retrieved memory content separately from
+        the call-count budget to prevent LLM context bloat from broad
+        memory searches. Per Meko docs, retrieving all memories or running
+        broad searches can add substantial content to LLM context.
+        """
+        ctx = self._investigations.get(investigation_id)
+        if ctx is None or ctx.halted:
+            return False
+        ctx.meko_retrieval_content_tokens_used += count
         ok, reason = self.check_budget(investigation_id)
         if not ok:
             ctx.halted = True

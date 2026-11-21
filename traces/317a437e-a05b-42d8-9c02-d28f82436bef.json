@@ -1,0 +1,1132 @@
+{
+  "trace_id": "6fcfb63f-be5d-473d-adee-f3c86282b97c",
+  "spans": [
+    {
+      "trace_id": "6fcfb63f-be5d-473d-adee-f3c86282b97c",
+      "span_id": "831146f41a8d12cf",
+      "parent_span_id": null,
+      "operation": "conversation_create",
+      "duration_ms": 6408.02,
+      "tokens": 99,
+      "status": "ok",
+      "timestamp": 1795236134.9103124,
+      "args": {
+        "agent_id": "ingestion_agent",
+        "title": "ATO signals for account acct_1042",
+        "metadata": "{\"kind\": \"signal_batch\", \"account_id\": \"acct_1042\"}",
+        "datapack_id": "af60be6d-60a9-42fc-8301-b91507178d0b"
+      },
+      "result": {
+        "id": "9b7dfcbb63184c75b0db4b8cb4530d3e",
+        "agent_id": "ingestion_agent",
+        "user_id": "58639b2f-f839-45f0-9c19-4ea530cbb982",
+        "app_id": null,
+        "run_id": null,
+        "title": "ATO signals for account acct_1042",
+        "metadata": {
+          "kind": "signal_batch",
+          "account_id": "acct_1042"
+        },
+        "created_at": "2026-11-21T04:41:04.225343+00:00",
+        "updated_at": "2026-11-21T04:41:04.225343+00:00"
+      },
+      "error": null
+    },
+    {
+      "trace_id": "6fcfb63f-be5d-473d-adee-f3c86282b97c",
+      "span_id": "52ae7cd1b1f324dd",
+      "parent_span_id": null,
+      "operation": "memory_add",
+      "duration_ms": 1339.1,
+      "tokens": 136,
+      "status": "ok",
+      "timestamp": 1795236136.249658,
+      "args": {
+        "text": "ATO signal for account acct_1042: login={'failed_count': 12, 'failure_rate': 0.9, 'new_location': True} (confidence 0.7) from ingestion_agent. JSON: {\"signal_type\": \"login\", \"value\": \"{'failed_count': 12, 'failure_rate': 0.9, 'new_location': True}\", \"confidence\": 0.7, \"evidence_refs\": [\"3496ebb7-0be5-47fd-9395-b193ea86992c\"], \"account_id\": \"acct_1042\"}",
+        "agent_id": "ingestion_agent",
+        "conversation_id": "9b7dfcbb63184c75b0db4b8cb4530d3e",
+        "run_id": "acct_1042",
+        "metadata": "{\"kind\": \"signal\", \"account_id\": \"acct_1042\"}",
+        "datapack_id": "af60be6d-60a9-42fc-8301-b91507178d0b"
+      },
+      "result": {
+        "results": [
+          {
+            "id": "35a5a058-6077-463c-9aa1-fe6a53c07876",
+            "memory": "ATO signal for account acct_1042: login={'failed_count': 12, 'failure_rate': 0.9, 'new_location': True} (confidence 0.7) from ingestion_agent. JSON: {\"signal_type\": \"login\", \"value\": \"{'failed_count': 12, 'failure_rate': 0.9, 'new_location': True}\", \"confidence\": 0.7, \"evidence_refs\": [\"3496ebb7-0be5-47fd-9395-b193ea86992c\"], \"account_id\": \"acct_1042\"}",
+            "event": "ADD",
+            "actor_id": null,
+            "role": "user"
+          }
+        ]
+      },
+      "error": null
+    },
+    {
+      "trace_id": "6fcfb63f-be5d-473d-adee-f3c86282b97c",
+      "span_id": "19b4298384c642f0",
+      "parent_span_id": null,
+      "operation": "memory_add",
+      "duration_ms": 1358.09,
+      "tokens": 127,
+      "status": "ok",
+      "timestamp": 1795236137.6078863,
+      "args": {
+        "text": "ATO signal for account acct_1042: device={'is_new_device': True, 'is_emulator': True} (confidence 0.7) from ingestion_agent. JSON: {\"signal_type\": \"device\", \"value\": \"{'is_new_device': True, 'is_emulator': True}\", \"confidence\": 0.7, \"evidence_refs\": [\"08ca5e7c-c143-4af9-976d-579aa18acaed\"], \"account_id\": \"acct_1042\"}",
+        "agent_id": "ingestion_agent",
+        "conversation_id": "9b7dfcbb63184c75b0db4b8cb4530d3e",
+        "run_id": "acct_1042",
+        "metadata": "{\"kind\": \"signal\", \"account_id\": \"acct_1042\"}",
+        "datapack_id": "af60be6d-60a9-42fc-8301-b91507178d0b"
+      },
+      "result": {
+        "results": [
+          {
+            "id": "5275bc2c-9629-412c-aeac-0adb1abee8f1",
+            "memory": "ATO signal for account acct_1042: device={'is_new_device': True, 'is_emulator': True} (confidence 0.7) from ingestion_agent. JSON: {\"signal_type\": \"device\", \"value\": \"{'is_new_device': True, 'is_emulator': True}\", \"confidence\": 0.7, \"evidence_refs\": [\"08ca5e7c-c143-4af9-976d-579aa18acaed\"], \"account_id\": \"acct_1042\"}",
+            "event": "ADD",
+            "actor_id": null,
+            "role": "user"
+          }
+        ]
+      },
+      "error": null
+    },
+    {
+      "trace_id": "6fcfb63f-be5d-473d-adee-f3c86282b97c",
+      "span_id": "254621754296d548",
+      "parent_span_id": null,
+      "operation": "memory_add",
+      "duration_ms": 1276.06,
+      "tokens": 127,
+      "status": "ok",
+      "timestamp": 1795236138.8840473,
+      "args": {
+        "text": "ATO signal for account acct_1042: reset={'after_failures': True, 'unusual_time': True} (confidence 0.7) from ingestion_agent. JSON: {\"signal_type\": \"reset\", \"value\": \"{'after_failures': True, 'unusual_time': True}\", \"confidence\": 0.7, \"evidence_refs\": [\"eee04438-9942-4ffe-8092-7078585f6533\"], \"account_id\": \"acct_1042\"}",
+        "agent_id": "ingestion_agent",
+        "conversation_id": "9b7dfcbb63184c75b0db4b8cb4530d3e",
+        "run_id": "acct_1042",
+        "metadata": "{\"kind\": \"signal\", \"account_id\": \"acct_1042\"}",
+        "datapack_id": "af60be6d-60a9-42fc-8301-b91507178d0b"
+      },
+      "result": {
+        "results": [
+          {
+            "id": "82161118-d4a4-40bd-bbfe-f3434a21ebc7",
+            "memory": "ATO signal for account acct_1042: reset={'after_failures': True, 'unusual_time': True} (confidence 0.7) from ingestion_agent. JSON: {\"signal_type\": \"reset\", \"value\": \"{'after_failures': True, 'unusual_time': True}\", \"confidence\": 0.7, \"evidence_refs\": [\"eee04438-9942-4ffe-8092-7078585f6533\"], \"account_id\": \"acct_1042\"}",
+            "event": "ADD",
+            "actor_id": null,
+            "role": "user"
+          }
+        ]
+      },
+      "error": null
+    },
+    {
+      "trace_id": "6fcfb63f-be5d-473d-adee-f3c86282b97c",
+      "span_id": "f3d7a7d572ed862d",
+      "parent_span_id": null,
+      "operation": "memory_add",
+      "duration_ms": 1326.42,
+      "tokens": 140,
+      "status": "ok",
+      "timestamp": 1795236140.210578,
+      "args": {
+        "text": "ATO signal for account acct_1042: support={'reset_requests': 3, 'unusual_time': True, 'multiple_contacts': True} (confidence 0.7) from ingestion_agent. JSON: {\"signal_type\": \"support\", \"value\": \"{'reset_requests': 3, 'unusual_time': True, 'multiple_contacts': True}\", \"confidence\": 0.7, \"evidence_refs\": [\"517214b3-b3b2-43aa-91c0-da1cf1e3e74b\"], \"account_id\": \"acct_1042\"}",
+        "agent_id": "ingestion_agent",
+        "conversation_id": "9b7dfcbb63184c75b0db4b8cb4530d3e",
+        "run_id": "acct_1042",
+        "metadata": "{\"kind\": \"signal\", \"account_id\": \"acct_1042\"}",
+        "datapack_id": "af60be6d-60a9-42fc-8301-b91507178d0b"
+      },
+      "result": {
+        "results": [
+          {
+            "id": "58af1aba-173a-4446-83f3-c4c0c124764f",
+            "memory": "ATO signal for account acct_1042: support={'reset_requests': 3, 'unusual_time': True, 'multiple_contacts': True} (confidence 0.7) from ingestion_agent. JSON: {\"signal_type\": \"support\", \"value\": \"{'reset_requests': 3, 'unusual_time': True, 'multiple_contacts': True}\", \"confidence\": 0.7, \"evidence_refs\": [\"517214b3-b3b2-43aa-91c0-da1cf1e3e74b\"], \"account_id\": \"acct_1042\"}",
+            "event": "ADD",
+            "actor_id": null,
+            "role": "user"
+          }
+        ]
+      },
+      "error": null
+    },
+    {
+      "trace_id": "6fcfb63f-be5d-473d-adee-f3c86282b97c",
+      "span_id": "420471d8c7184cc5",
+      "parent_span_id": null,
+      "operation": "memory_add",
+      "duration_ms": 1521.31,
+      "tokens": 139,
+      "status": "ok",
+      "timestamp": 1795236141.7320187,
+      "args": {
+        "text": "ATO signal for account acct_1042: transaction={'new_payee': True, 'test_payment': True, 'limit_change': False} (confidence 0.7) from ingestion_agent. JSON: {\"signal_type\": \"transaction\", \"value\": \"{'new_payee': True, 'test_payment': True, 'limit_change': False}\", \"confidence\": 0.7, \"evidence_refs\": [\"b9d6ac98-91b9-46a9-b670-90d27410aed0\"], \"account_id\": \"acct_1042\"}",
+        "agent_id": "ingestion_agent",
+        "conversation_id": "9b7dfcbb63184c75b0db4b8cb4530d3e",
+        "run_id": "acct_1042",
+        "metadata": "{\"kind\": \"signal\", \"account_id\": \"acct_1042\"}",
+        "datapack_id": "af60be6d-60a9-42fc-8301-b91507178d0b"
+      },
+      "result": {
+        "results": [
+          {
+            "id": "95165509-52ba-483b-831c-57c6da5b27e9",
+            "memory": "ATO signal for account acct_1042: transaction={'new_payee': True, 'test_payment': True, 'limit_change': False} (confidence 0.7) from ingestion_agent. JSON: {\"signal_type\": \"transaction\", \"value\": \"{'new_payee': True, 'test_payment': True, 'limit_change': False}\", \"confidence\": 0.7, \"evidence_refs\": [\"b9d6ac98-91b9-46a9-b670-90d27410aed0\"], \"account_id\": \"acct_1042\"}",
+            "event": "ADD",
+            "actor_id": null,
+            "role": "user"
+          }
+        ]
+      },
+      "error": null
+    },
+    {
+      "trace_id": "6fcfb63f-be5d-473d-adee-f3c86282b97c",
+      "span_id": "94b8fa6b69720e7d",
+      "parent_span_id": null,
+      "operation": "conversation_create",
+      "duration_ms": 1089.73,
+      "tokens": 108,
+      "status": "ok",
+      "timestamp": 1795236142.8218665,
+      "args": {
+        "agent_id": "ingestion_agent",
+        "title": "Memory search: ATO signals for account acct_1042",
+        "metadata": "{\"kind\": \"memory_search\", \"query\": \"ATO signals for account acct_1042\"}",
+        "datapack_id": "af60be6d-60a9-42fc-8301-b91507178d0b"
+      },
+      "result": {
+        "id": "b488cbe5c9e7407e9a47d67a2818fc38",
+        "agent_id": "ingestion_agent",
+        "user_id": "58639b2f-f839-45f0-9c19-4ea530cbb982",
+        "app_id": null,
+        "run_id": null,
+        "title": "Memory search: ATO signals for account acct_1042",
+        "metadata": {
+          "kind": "memory_search",
+          "query": "ATO signals for account acct_1042"
+        },
+        "created_at": "2026-11-21T04:41:15.802681+00:00",
+        "updated_at": "2026-11-21T04:41:15.802681+00:00"
+      },
+      "error": null
+    },
+    {
+      "trace_id": "6fcfb63f-be5d-473d-adee-f3c86282b97c",
+      "span_id": "0c9a9673e1deb222",
+      "parent_span_id": null,
+      "operation": "memory_search",
+      "duration_ms": 1997.47,
+      "tokens": 2611,
+      "status": "ok",
+      "timestamp": 1795236144.8196785,
+      "args": {
+        "query": "ATO signals for account acct_1042",
+        "limit": 10,
+        "agent_id": "ingestion_agent",
+        "conversation_id": "b488cbe5c9e7407e9a47d67a2818fc38",
+        "datapack_id": "af60be6d-60a9-42fc-8301-b91507178d0b"
+      },
+      "result": {
+        "results": [
+          {
+            "id": "e0b8b784-6459-47cc-b97f-ac9c961dbdb1",
+            "memory": "ATO signal for account acct_1042: support={'reset_requests': 3, 'unusual_time': True, 'multiple_contacts': True} (confidence 0.7) from ingestion_agent. JSON: {\"signal_type\": \"support\", \"value\": \"{'reset_requests': 3, 'unusual_time': True, 'multiple_contacts': True}\", \"confidence\": 0.7, \"evidence_refs\": [\"764b7b55-143a-4b71-9e4d-05310214b07e\"], \"account_id\": \"acct_1042\"}",
+            "hash": "b5cfb254ec7cee3556a11feaf0b04195",
+            "metadata": {
+              "kind": "signal",
+              "account_id": "acct_1042",
+              "meko_datapack_id": "af60be6d-60a9-42fc-8301-b91507178d0b"
+            },
+            "score": 0.4070198263470922,
+            "created_at": "2026-11-21T03:10:02.192600+00:00",
+            "updated_at": "2026-11-21T03:10:02.192600+00:00",
+            "raw_similarity_score": 0.7826687204459906,
+            "user_id": "58639b2f-f839-45f0-9c19-4ea530cbb982",
+            "agent_id": "ingestion_agent",
+            "run_id": "1ac8411ee3bd47ab8f27f463b1343aa8",
+            "role": "user"
+          },
+          {
+            "id": "0562287a-11b7-4aa3-b5af-8a145cf26ea1",
+            "memory": "ATO signal for account acct_1042: support={'reset_requests': 3, 'unusual_time': True, 'multiple_contacts': True} (confidence 0.7) from ingestion_agent. JSON: {\"signal_type\": \"support\", \"value\": \"{'reset_requests': 3, 'unusual_time': True, 'multiple_contacts': True}\", \"confidence\": 0.7, \"evidence_refs\": [\"fe072f6a-200e-44be-b409-c596967fa44f\"], \"account_id\": \"acct_1042\"}",
+            "hash": "9a4b2b8918ee18657ab5b4a222599551",
+            "metadata": {
+              "kind": "signal",
+              "account_id": "acct_1042",
+              "meko_datapack_id": "af60be6d-60a9-42fc-8301-b91507178d0b"
+            },
+            "score": 0.4066430994821138,
+            "created_at": "2026-11-21T02:18:31.085946+00:00",
+            "updated_at": "2026-11-21T02:18:31.085946+00:00",
+            "raw_similarity_score": 0.7819152667160337,
+            "user_id": "58639b2f-f839-45f0-9c19-4ea530cbb982",
+            "agent_id": "ingestion_agent",
+            "run_id": "f00b4c0123594e4cbf037af17892972f",
+            "role": "user"
+          },
+          {
+            "id": "58af1aba-173a-4446-83f3-c4c0c124764f",
+            "memory": "ATO signal for account acct_1042: support={'reset_requests': 3, 'unusual_time': True, 'multiple_contacts': True} (confidence 0.7) from ingestion_agent. JSON: {\"signal_type\": \"support\", \"value\": \"{'reset_requests': 3, 'unusual_time': True, 'multiple_contacts': True}\", \"confidence\": 0.7, \"evidence_refs\": [\"517214b3-b3b2-43aa-91c0-da1cf1e3e74b\"], \"account_id\": \"acct_1042\"}",
+            "hash": "105696619521174351449878b55f9462",
+            "metadata": {
+              "kind": "signal",
+              "account_id": "acct_1042",
+              "meko_datapack_id": "af60be6d-60a9-42fc-8301-b91507178d0b"
+            },
+            "score": 0.40650182294713216,
+            "created_at": "2026-11-21T04:41:13.208811+00:00",
+            "updated_at": "2026-11-21T04:41:13.208811+00:00",
+            "raw_similarity_score": 0.7816327136460705,
+            "user_id": "58639b2f-f839-45f0-9c19-4ea530cbb982",
+            "agent_id": "ingestion_agent",
+            "run_id": "9b7dfcbb63184c75b0db4b8cb4530d3e",
+            "role": "user"
+          },
+          {
+            "id": "631c6572-d76d-491a-96de-29e12973cf42",
+            "memory": "ATO signal for account acct_1042: support={'reset_requests': 3, 'unusual_time': True, 'multiple_contacts': True} (confidence 0.7) from ingestion_agent. JSON: {\"signal_type\": \"support\", \"value\": \"{'reset_requests': 3, 'unusual_time': True, 'multiple_contacts': True}\", \"confidence\": 0.7, \"evidence_refs\": [\"9469ac83-4ebd-4441-8b86-68ea8846291f\"], \"account_id\": \"acct_1042\"}",
+            "hash": "736c51d7f8e0a3954cf107cda7d4734c",
+            "metadata": {
+              "kind": "signal",
+              "account_id": "acct_1042",
+              "meko_datapack_id": "af60be6d-60a9-42fc-8301-b91507178d0b"
+            },
+            "score": 0.4063340834516919,
+            "created_at": "2026-11-21T03:59:47.577537+00:00",
+            "updated_at": "2026-11-21T03:59:47.577537+00:00",
+            "raw_similarity_score": 0.78129723465519,
+            "user_id": "58639b2f-f839-45f0-9c19-4ea530cbb982",
+            "agent_id": "ingestion_agent",
+            "run_id": "452e9667009943d4bd6a9a0753ea8154",
+            "role": "user"
+          },
+          {
+            "id": "7140a0c4-dd20-45e3-8519-190c34748c05",
+            "memory": "ATO signal for account acct_1042: support={'reset_requests': 3, 'unusual_time': True, 'multiple_contacts': True} (confidence 0.7) from ingestion_agent. JSON: {\"signal_type\": \"support\", \"value\": \"{'reset_requests': 3, 'unusual_time': True, 'multiple_contacts': True}\", \"confidence\": 0.7, \"evidence_refs\": [\"2e0c0a92-b6cb-4ddb-8126-b7694ade3380\"], \"account_id\": \"acct_1042\"}",
+            "hash": "55954d38d0ddcfcf826e54423d288973",
+            "metadata": {
+              "kind": "signal",
+              "account_id": "acct_1042",
+              "meko_datapack_id": "af60be6d-60a9-42fc-8301-b91507178d0b"
+            },
+            "score": 0.4056872481862115,
+            "created_at": "2026-11-21T02:14:56.499983+00:00",
+            "updated_at": "2026-11-21T02:14:56.499983+00:00",
+            "raw_similarity_score": 0.7800035641242291,
+            "user_id": "58639b2f-f839-45f0-9c19-4ea530cbb982",
+            "agent_id": "ingestion_agent",
+            "run_id": "3b2e69456a8a4768a338b6ea48169e4a",
+            "role": "user"
+          },
+          {
+            "id": "47b6bac1-1205-4358-89f4-0c91df83e1dc",
+            "memory": "ATO signal for account acct_1042: support={'reset_requests': 3, 'unusual_time': True, 'multiple_contacts': True} (confidence 0.7) from ingestion_agent. JSON: {\"signal_type\": \"support\", \"value\": \"{'reset_requests': 3, 'unusual_time': True, 'multiple_contacts': True}\", \"confidence\": 0.7, \"evidence_refs\": [\"2e6f7fa3-b280-4a26-8d48-a02cfa9d6ced\"], \"account_id\": \"acct_1042\"}",
+            "hash": "b6125be62492084c7fd55c73a03478c8",
+            "metadata": {
+              "kind": "signal",
+              "account_id": "acct_1042",
+              "meko_datapack_id": "af60be6d-60a9-42fc-8301-b91507178d0b"
+            },
+            "score": 0.40558824825185036,
+            "created_at": "2026-11-21T02:20:45.128947+00:00",
+            "updated_at": "2026-11-21T02:20:45.128947+00:00",
+            "raw_similarity_score": 0.7798055642555068,
+            "user_id": "58639b2f-f839-45f0-9c19-4ea530cbb982",
+            "agent_id": "ingestion_agent",
+            "run_id": "e4e74af696bb4ac0867dd875156ebec8",
+            "role": "user"
+          },
+          {
+            "id": "7dd0833b-cd87-43e7-945d-29242977e64a",
+            "memory": "ATO signal for account acct_1042: support={'reset_requests': 3, 'unusual_time': True, 'multiple_contacts': True} (confidence 0.7) from ingestion_agent. JSON: {\"signal_type\": \"support\", \"value\": \"{'reset_requests': 3, 'unusual_time': True, 'multiple_contacts': True}\", \"confidence\": 0.7, \"evidence_refs\": [\"6cd6d587-bbce-4ce9-a9ee-8cdd43183e65\"], \"account_id\": \"acct_1042\"}",
+            "hash": "6191860bb7d4f858a82bd52e9a282f58",
+            "metadata": {
+              "kind": "signal",
+              "account_id": "acct_1042",
+              "meko_datapack_id": "af60be6d-60a9-42fc-8301-b91507178d0b"
+            },
+            "score": 0.4053249085971106,
+            "created_at": "2026-11-21T04:34:53.188969+00:00",
+            "updated_at": "2026-11-21T04:34:53.188969+00:00",
+            "raw_similarity_score": 0.7792788849460274,
+            "user_id": "58639b2f-f839-45f0-9c19-4ea530cbb982",
+            "agent_id": "ingestion_agent",
+            "run_id": "ab201a3754fa4b77a18fe8d97ecc0135",
+            "role": "user"
+          },
+          {
+            "id": "df6d51b8-58e3-407d-9f0e-592819667989",
+            "memory": "ATO signal for account acct_1042: support={'reset_requests': 3, 'unusual_time': True, 'multiple_contacts': True} (confidence 0.7) from ingestion_agent. JSON: {\"signal_type\": \"support\", \"value\": \"{'reset_requests': 3, 'unusual_time': True, 'multiple_contacts': True}\", \"confidence\": 0.7, \"evidence_refs\": [\"67ecd577-bbea-4f2c-be02-226b31a9134c\"], \"account_id\": \"acct_1042\"}",
+            "hash": "bc5ce6ffe00491867b26e216ec1ea010",
+            "metadata": {
+              "kind": "signal",
+              "account_id": "acct_1042",
+              "meko_datapack_id": "af60be6d-60a9-42fc-8301-b91507178d0b"
+            },
+            "score": 0.4040791194291086,
+            "created_at": "2026-11-21T02:16:07.372935+00:00",
+            "updated_at": "2026-11-21T02:16:07.372935+00:00",
+            "raw_similarity_score": 0.7767873066100234,
+            "user_id": "58639b2f-f839-45f0-9c19-4ea530cbb982",
+            "agent_id": "ingestion_agent",
+            "run_id": "721e8002548d4a4380fca9b82be9d471",
+            "role": "user"
+          },
+          {
+            "id": "35a5a058-6077-463c-9aa1-fe6a53c07876",
+            "memory": "ATO signal for account acct_1042: login={'failed_count': 12, 'failure_rate': 0.9, 'new_location': True} (confidence 0.7) from ingestion_agent. JSON: {\"signal_type\": \"login\", \"value\": \"{'failed_count': 12, 'failure_rate': 0.9, 'new_location': True}\", \"confidence\": 0.7, \"evidence_refs\": [\"3496ebb7-0be5-47fd-9395-b193ea86992c\"], \"account_id\": \"acct_1042\"}",
+            "hash": "95cf1bec34d27d488e12243b2b0f3a94",
+            "metadata": {
+              "kind": "signal",
+              "account_id": "acct_1042",
+              "meko_datapack_id": "af60be6d-60a9-42fc-8301-b91507178d0b"
+            },
+            "score": 0.40319899048069757,
+            "created_at": "2026-11-21T04:41:09.240235+00:00",
+            "updated_at": "2026-11-21T04:41:09.240235+00:00",
+            "raw_similarity_score": 0.7750270487132013,
+            "user_id": "58639b2f-f839-45f0-9c19-4ea530cbb982",
+            "agent_id": "ingestion_agent",
+            "run_id": "9b7dfcbb63184c75b0db4b8cb4530d3e",
+            "role": "user"
+          },
+          {
+            "id": "ac891713-05c2-4cae-9409-6aff612b04be",
+            "memory": "ATO signal for account acct_1042: login={'failed_count': 12, 'failure_rate': 0.9, 'new_location': True} (confidence 0.7) from ingestion_agent. JSON: {\"signal_type\": \"login\", \"value\": \"{'failed_count': 12, 'failure_rate': 0.9, 'new_location': True}\", \"confidence\": 0.7, \"evidence_refs\": [\"3ff8f805-6e09-47ae-b873-679ca01d1d47\"], \"account_id\": \"acct_1042\"}",
+            "hash": "4b2b9f2a7639bab8755a667407dcd214",
+            "metadata": {
+              "kind": "signal",
+              "account_id": "acct_1042",
+              "meko_datapack_id": "af60be6d-60a9-42fc-8301-b91507178d0b"
+            },
+            "score": 0.40285215221099113,
+            "created_at": "2026-11-21T02:20:39.406844+00:00",
+            "updated_at": "2026-11-21T02:20:39.406844+00:00",
+            "raw_similarity_score": 0.7743333721737884,
+            "user_id": "58639b2f-f839-45f0-9c19-4ea530cbb982",
+            "agent_id": "ingestion_agent",
+            "run_id": "e4e74af696bb4ac0867dd875156ebec8",
+            "role": "user"
+          }
+        ]
+      },
+      "error": null
+    },
+    {
+      "trace_id": "6fcfb63f-be5d-473d-adee-f3c86282b97c",
+      "span_id": "47440c22223b9025",
+      "parent_span_id": null,
+      "operation": "conversation_create",
+      "duration_ms": 1103.36,
+      "tokens": 100,
+      "status": "ok",
+      "timestamp": 1795236145.9235518,
+      "args": {
+        "agent_id": "correlator_agent",
+        "title": "ATO correlation for account acct_1042",
+        "metadata": "{\"kind\": \"correlation\", \"account_id\": \"acct_1042\"}",
+        "datapack_id": "af60be6d-60a9-42fc-8301-b91507178d0b"
+      },
+      "result": {
+        "id": "0a53c5d931c94bd9966c14aaf0f078f7",
+        "agent_id": "correlator_agent",
+        "user_id": "58639b2f-f839-45f0-9c19-4ea530cbb982",
+        "app_id": null,
+        "run_id": null,
+        "title": "ATO correlation for account acct_1042",
+        "metadata": {
+          "kind": "correlation",
+          "account_id": "acct_1042"
+        },
+        "created_at": "2026-11-21T04:41:18.890730+00:00",
+        "updated_at": "2026-11-21T04:41:18.890730+00:00"
+      },
+      "error": null
+    },
+    {
+      "trace_id": "6fcfb63f-be5d-473d-adee-f3c86282b97c",
+      "span_id": "679c22e0d52a4fac",
+      "parent_span_id": null,
+      "operation": "context_search",
+      "duration_ms": 2861.73,
+      "tokens": 6708,
+      "status": "ok",
+      "timestamp": 1795236148.785772,
+      "args": {
+        "query": "recent ATO signals for account acct_1042, and known attacker playbooks matching them",
+        "conversation_id": "0a53c5d931c94bd9966c14aaf0f078f7",
+        "agent_id": "correlator_agent",
+        "limit": 20,
+        "datapack_id": "af60be6d-60a9-42fc-8301-b91507178d0b"
+      },
+      "result": {
+        "results": {
+          "knowledge_base": [
+            {
+              "id": "96f2dfc7-537d-518c-a986-4762d79607c0",
+              "chunk_text": "Section: Account Takeover (ATO) Playbook \u2014 Device Channel > Overview\n\nDetects account takeover attempts through device-related signals.",
+              "document_id": "ba2f3f60-9b9f-4d2c-a752-b080cb74e095",
+              "metadata_filters": {},
+              "distance": 0.3731011692561157,
+              "match_type": "hybrid",
+              "rank": 0.028225187,
+              "rerank_score": 0.7441317024398245
+            },
+            {
+              "id": "952d3593-c9f7-59a8-8fe1-e2480c7a5b63",
+              "chunk_text": "Section: Account Takeover (ATO) Playbook \u2014 Transaction Channel > Overview\n\nDetects account takeover attempts through transaction-related signals.",
+              "document_id": "ccff1428-c509-455f-8c2a-b66b5686c4b1",
+              "metadata_filters": {},
+              "distance": 0.3599141933476169,
+              "match_type": "hybrid",
+              "rank": 0.028225187,
+              "rerank_score": 0.7378461651776127
+            },
+            {
+              "id": "360906da-770d-5c7d-a9b5-905cbacf8110",
+              "chunk_text": "Section: Account Takeover (ATO) Playbook \u2014 Device Channel > Signals\n\nNew device: First-time login from an unrecognized deviceEmulator detected: Login from an emulator or virtual deviceDevice fingerprint change: Significant change in device attributes",
+              "document_id": "ba2f3f60-9b9f-4d2c-a752-b080cb74e095",
+              "metadata_filters": {},
+              "distance": 0.4526904059413359,
+              "match_type": "hybrid",
+              "rank": 0.02605402,
+              "rerank_score": 0.7162612266001714
+            },
+            {
+              "id": "fed08261-4b57-525e-850f-bd6da1cb9bdd",
+              "chunk_text": "Section: Account Takeover (ATO) Playbook \u2014 Reset Channel > Overview\n\nDetects account takeover attempts through password reset signals.",
+              "document_id": "3ee5a51a-9a34-417d-862e-9cdc4e1c0a78",
+              "metadata_filters": {},
+              "distance": 0.4017859647414437,
+              "match_type": "hybrid",
+              "rank": 0.028225187,
+              "rerank_score": 0.702849673450033
+            },
+            {
+              "id": "98006b74-d615-5095-a905-77b0979d9876",
+              "chunk_text": "Section: Account Takeover (ATO) Playbook \u2014 Login Channel > Signals\n\nCredential stuffing: 10+ failed logins in a short window, or failure rate >= 0.8Elevated failed logins: 5-9 failed loginsMinor login failures: 1-4 failed loginsNew location: Login from a previously unseen geographic locationNew IP: Login from a previously unseen IP address",
+              "document_id": "2a8dabb7-918e-42e4-be0d-56050031294c",
+              "metadata_filters": {},
+              "distance": 0.44519329541589214,
+              "match_type": "hybrid",
+              "rank": 0.02605402,
+              "rerank_score": 0.5820598389337489
+            },
+            {
+              "id": "6cb50c96-365d-5f07-b976-cd53fd07f530",
+              "chunk_text": "Section: Account Takeover (ATO) Playbook \u2014 Device Channel > Recommended Actions\n\nNew device + emulator: step-up authentication, device challenge, temporary holdNew device only: email verification, notify user of new deviceDevice fingerprint change: monitor for additional signals",
+              "document_id": "ba2f3f60-9b9f-4d2c-a752-b080cb74e095",
+              "metadata_filters": {},
+              "rank": 0.02605402,
+              "distance": 0.47875631633910076,
+              "match_type": "keyword",
+              "rerank_score": 0.5288824968365592
+            },
+            {
+              "id": "3fa6057c-5b50-5770-8429-ef7c179fa718",
+              "chunk_text": "Section: Account Takeover (ATO) Playbook \u2014 Transaction Channel > Signals\n\nNew payee: First-time payment to a new recipientTest payment: Small test payment before larger transferLimit change: Credit/debit limit increase requestCash-out sequence: Rapid movement of funds to external accounts",
+              "document_id": "ccff1428-c509-455f-8c2a-b66b5686c4b1",
+              "metadata_filters": {},
+              "rank": 0.028225187,
+              "distance": 0.4867062478158731,
+              "match_type": "keyword",
+              "rerank_score": 0.5122533050888722
+            },
+            {
+              "id": "a3e3fe1f-5c22-5467-8ba6-ee272f52fff0",
+              "chunk_text": "Section: Account Takeover (ATO) Playbook \u2014 Support Channel > Related Playbooks\n\nreset_channel.md \u2014 reset signals often come through supportlogin_channel.md \u2014 credential stuffing may precede support contact",
+              "document_id": "91585a62-2477-4a35-ad77-094d772cc50b",
+              "metadata_filters": {},
+              "distance": 0.43976892554960256,
+              "match_type": "hybrid",
+              "rank": 0.028225187,
+              "rerank_score": 0.48630616067326193
+            },
+            {
+              "id": "1f3ef025-58be-5ebf-b5d6-4f27b76b0d9f",
+              "chunk_text": "Section: Account Takeover (ATO) Playbook \u2014 Support Channel > Confidence Thresholds\n\nSupport takeover pattern: high confidence (>= 0.75)Multiple reset requests: moderate confidence (>= 0.6)Single unusual contact: low confidence (>= 0.4)",
+              "document_id": "91585a62-2477-4a35-ad77-094d772cc50b",
+              "metadata_filters": {},
+              "rank": 0.017369347,
+              "distance": 0.4875921814875842,
+              "match_type": "keyword",
+              "rerank_score": 0.2427062645439189
+            }
+          ],
+          "memory": [
+            {
+              "id": "78f622c8-5cc1-49e8-82db-153745163b54",
+              "memory": "ATO signal for account acct_1042: login={'failed_count': 12, 'failure_rate': 0.9, 'new_location': True} (confidence 0.7) from ingestion_agent. JSON: {\"signal_type\": \"login\", \"value\": \"{'failed_count': 12, 'failure_rate': 0.9, 'new_location': True}\", \"confidence\": 0.7, \"evidence_refs\": [\"1d583743-61dd-40d8-a99a-83227d6e13d1\"], \"account_id\": \"acct_1042\"}",
+              "hash": "b54fc6d01510fb79902507a4350a87f5",
+              "metadata": {
+                "kind": "signal",
+                "account_id": "acct_1042",
+                "meko_datapack_id": "af60be6d-60a9-42fc-8301-b91507178d0b"
+              },
+              "score": 0.6100838639107159,
+              "created_at": "2026-11-21T02:14:52.677953+00:00",
+              "updated_at": "2026-11-21T02:14:52.677953+00:00",
+              "raw_similarity_score": 0.6100838639107159,
+              "user_id": "58639b2f-f839-45f0-9c19-4ea530cbb982",
+              "agent_id": "ingestion_agent",
+              "run_id": "3b2e69456a8a4768a338b6ea48169e4a",
+              "role": "user"
+            },
+            {
+              "id": "ac891713-05c2-4cae-9409-6aff612b04be",
+              "memory": "ATO signal for account acct_1042: login={'failed_count': 12, 'failure_rate': 0.9, 'new_location': True} (confidence 0.7) from ingestion_agent. JSON: {\"signal_type\": \"login\", \"value\": \"{'failed_count': 12, 'failure_rate': 0.9, 'new_location': True}\", \"confidence\": 0.7, \"evidence_refs\": [\"3ff8f805-6e09-47ae-b873-679ca01d1d47\"], \"account_id\": \"acct_1042\"}",
+              "hash": "4b2b9f2a7639bab8755a667407dcd214",
+              "metadata": {
+                "kind": "signal",
+                "account_id": "acct_1042",
+                "meko_datapack_id": "af60be6d-60a9-42fc-8301-b91507178d0b"
+              },
+              "score": 0.6095482430800139,
+              "created_at": "2026-11-21T02:20:39.406844+00:00",
+              "updated_at": "2026-11-21T02:20:39.406844+00:00",
+              "raw_similarity_score": 0.6095482430800139,
+              "user_id": "58639b2f-f839-45f0-9c19-4ea530cbb982",
+              "agent_id": "ingestion_agent",
+              "run_id": "e4e74af696bb4ac0867dd875156ebec8",
+              "role": "user"
+            },
+            {
+              "id": "35a5a058-6077-463c-9aa1-fe6a53c07876",
+              "memory": "ATO signal for account acct_1042: login={'failed_count': 12, 'failure_rate': 0.9, 'new_location': True} (confidence 0.7) from ingestion_agent. JSON: {\"signal_type\": \"login\", \"value\": \"{'failed_count': 12, 'failure_rate': 0.9, 'new_location': True}\", \"confidence\": 0.7, \"evidence_refs\": [\"3496ebb7-0be5-47fd-9395-b193ea86992c\"], \"account_id\": \"acct_1042\"}",
+              "hash": "95cf1bec34d27d488e12243b2b0f3a94",
+              "metadata": {
+                "kind": "signal",
+                "account_id": "acct_1042",
+                "meko_datapack_id": "af60be6d-60a9-42fc-8301-b91507178d0b"
+              },
+              "score": 0.6092973363386918,
+              "created_at": "2026-11-21T04:41:09.240235+00:00",
+              "updated_at": "2026-11-21T04:41:09.240235+00:00",
+              "raw_similarity_score": 0.6092973363386918,
+              "user_id": "58639b2f-f839-45f0-9c19-4ea530cbb982",
+              "agent_id": "ingestion_agent",
+              "run_id": "9b7dfcbb63184c75b0db4b8cb4530d3e",
+              "role": "user"
+            },
+            {
+              "id": "0af04ec4-fbaa-47b6-957c-d8ac1596d823",
+              "memory": "ATO signal for account acct_1042: login={'failed_count': 12, 'failure_rate': 0.9, 'new_location': True} (confidence 0.7) from ingestion_agent. JSON: {\"signal_type\": \"login\", \"value\": \"{'failed_count': 12, 'failure_rate': 0.9, 'new_location': True}\", \"confidence\": 0.7, \"evidence_refs\": [\"c47e64a7-4b8b-4f3a-9d5d-70e1cd9fdc33\"], \"account_id\": \"acct_1042\"}",
+              "hash": "5b7f160cc7cb78c794100447903b19de",
+              "metadata": {
+                "kind": "signal",
+                "account_id": "acct_1042",
+                "meko_datapack_id": "af60be6d-60a9-42fc-8301-b91507178d0b"
+              },
+              "score": 0.6087915760624034,
+              "created_at": "2026-11-21T03:09:57.504987+00:00",
+              "updated_at": "2026-11-21T03:09:57.504987+00:00",
+              "raw_similarity_score": 0.6087915760624034,
+              "user_id": "58639b2f-f839-45f0-9c19-4ea530cbb982",
+              "agent_id": "ingestion_agent",
+              "run_id": "1ac8411ee3bd47ab8f27f463b1343aa8",
+              "role": "user"
+            },
+            {
+              "id": "7a9bfb94-9ff0-4333-91d1-109a7d59b541",
+              "memory": "ATO signal for account acct_1042: login={'failed_count': 12, 'failure_rate': 0.9, 'new_location': True} (confidence 0.7) from ingestion_agent. JSON: {\"signal_type\": \"login\", \"value\": \"{'failed_count': 12, 'failure_rate': 0.9, 'new_location': True}\", \"confidence\": 0.7, \"evidence_refs\": [\"8286f9d1-6f14-4aae-a3b3-c42b22093868\"], \"account_id\": \"acct_1042\"}",
+              "hash": "a086ed378fa674f7f448239b4ee59b24",
+              "metadata": {
+                "kind": "signal",
+                "account_id": "acct_1042",
+                "meko_datapack_id": "af60be6d-60a9-42fc-8301-b91507178d0b"
+              },
+              "score": 0.6084812330781973,
+              "created_at": "2026-11-21T04:34:49.004205+00:00",
+              "updated_at": "2026-11-21T04:34:49.004205+00:00",
+              "raw_similarity_score": 0.6084812330781973,
+              "user_id": "58639b2f-f839-45f0-9c19-4ea530cbb982",
+              "agent_id": "ingestion_agent",
+              "run_id": "ab201a3754fa4b77a18fe8d97ecc0135",
+              "role": "user"
+            },
+            {
+              "id": "ef7465e9-5887-4606-b576-bbd4a578b72a",
+              "memory": "ATO signal for account acct_1042: login={'failed_count': 12, 'failure_rate': 0.9, 'new_location': True} (confidence 0.7) from ingestion_agent. JSON: {\"signal_type\": \"login\", \"value\": \"{'failed_count': 12, 'failure_rate': 0.9, 'new_location': True}\", \"confidence\": 0.7, \"evidence_refs\": [\"e2403580-966b-4136-8c8d-f73120c86ada\"], \"account_id\": \"acct_1042\"}",
+              "hash": "a54c9faa56ba80d6a4bcc1f28e72ebaa",
+              "metadata": {
+                "kind": "signal",
+                "account_id": "acct_1042",
+                "meko_datapack_id": "af60be6d-60a9-42fc-8301-b91507178d0b"
+              },
+              "score": 0.607610181908087,
+              "created_at": "2026-11-21T02:18:27.302019+00:00",
+              "updated_at": "2026-11-21T02:18:27.302019+00:00",
+              "raw_similarity_score": 0.607610181908087,
+              "user_id": "58639b2f-f839-45f0-9c19-4ea530cbb982",
+              "agent_id": "ingestion_agent",
+              "run_id": "f00b4c0123594e4cbf037af17892972f",
+              "role": "user"
+            },
+            {
+              "id": "b76edcde-749d-486f-87fb-8d6de746b3a3",
+              "memory": "ATO signal for account acct_1042: login={'failed_count': 12, 'failure_rate': 0.9, 'new_location': True} (confidence 0.7) from ingestion_agent. JSON: {\"signal_type\": \"login\", \"value\": \"{'failed_count': 12, 'failure_rate': 0.9, 'new_location': True}\", \"confidence\": 0.7, \"evidence_refs\": [\"8d5ac6e9-4d13-485f-8ed3-ef7857f488e4\"], \"account_id\": \"acct_1042\"}",
+              "hash": "b2082a96125004c8af6a3e671a6ca09b",
+              "metadata": {
+                "kind": "signal",
+                "account_id": "acct_1042",
+                "meko_datapack_id": "af60be6d-60a9-42fc-8301-b91507178d0b"
+              },
+              "score": 0.607253524451282,
+              "created_at": "2026-11-21T02:16:02.846979+00:00",
+              "updated_at": "2026-11-21T02:16:02.846979+00:00",
+              "raw_similarity_score": 0.607253524451282,
+              "user_id": "58639b2f-f839-45f0-9c19-4ea530cbb982",
+              "agent_id": "ingestion_agent",
+              "run_id": "721e8002548d4a4380fca9b82be9d471",
+              "role": "user"
+            },
+            {
+              "id": "df0960bf-1039-40ff-b84d-693b6ddc4fc7",
+              "memory": "ATO signal for account acct_1042: login={'failed_count': 12, 'failure_rate': 0.9, 'new_location': True} (confidence 0.7) from ingestion_agent. JSON: {\"signal_type\": \"login\", \"value\": \"{'failed_count': 12, 'failure_rate': 0.9, 'new_location': True}\", \"confidence\": 0.7, \"evidence_refs\": [\"ef972dde-d113-4974-9a93-12a87c873370\"], \"account_id\": \"acct_1042\"}",
+              "hash": "53b46508b5301f74fc44831ca7309599",
+              "metadata": {
+                "kind": "signal",
+                "account_id": "acct_1042",
+                "meko_datapack_id": "af60be6d-60a9-42fc-8301-b91507178d0b"
+              },
+              "score": 0.6057023043261617,
+              "created_at": "2026-11-21T03:59:43.568246+00:00",
+              "updated_at": "2026-11-21T03:59:43.568246+00:00",
+              "raw_similarity_score": 0.6057023043261617,
+              "user_id": "58639b2f-f839-45f0-9c19-4ea530cbb982",
+              "agent_id": "ingestion_agent",
+              "run_id": "452e9667009943d4bd6a9a0753ea8154",
+              "role": "user"
+            },
+            {
+              "id": "631c6572-d76d-491a-96de-29e12973cf42",
+              "memory": "ATO signal for account acct_1042: support={'reset_requests': 3, 'unusual_time': True, 'multiple_contacts': True} (confidence 0.7) from ingestion_agent. JSON: {\"signal_type\": \"support\", \"value\": \"{'reset_requests': 3, 'unusual_time': True, 'multiple_contacts': True}\", \"confidence\": 0.7, \"evidence_refs\": [\"9469ac83-4ebd-4441-8b86-68ea8846291f\"], \"account_id\": \"acct_1042\"}",
+              "hash": "736c51d7f8e0a3954cf107cda7d4734c",
+              "metadata": {
+                "kind": "signal",
+                "account_id": "acct_1042",
+                "meko_datapack_id": "af60be6d-60a9-42fc-8301-b91507178d0b"
+              },
+              "score": 0.5922550615582794,
+              "created_at": "2026-11-21T03:59:47.577537+00:00",
+              "updated_at": "2026-11-21T03:59:47.577537+00:00",
+              "raw_similarity_score": 0.5922550615582794,
+              "user_id": "58639b2f-f839-45f0-9c19-4ea530cbb982",
+              "agent_id": "ingestion_agent",
+              "run_id": "452e9667009943d4bd6a9a0753ea8154",
+              "role": "user"
+            },
+            {
+              "id": "0562287a-11b7-4aa3-b5af-8a145cf26ea1",
+              "memory": "ATO signal for account acct_1042: support={'reset_requests': 3, 'unusual_time': True, 'multiple_contacts': True} (confidence 0.7) from ingestion_agent. JSON: {\"signal_type\": \"support\", \"value\": \"{'reset_requests': 3, 'unusual_time': True, 'multiple_contacts': True}\", \"confidence\": 0.7, \"evidence_refs\": [\"fe072f6a-200e-44be-b409-c596967fa44f\"], \"account_id\": \"acct_1042\"}",
+              "hash": "9a4b2b8918ee18657ab5b4a222599551",
+              "metadata": {
+                "kind": "signal",
+                "account_id": "acct_1042",
+                "meko_datapack_id": "af60be6d-60a9-42fc-8301-b91507178d0b"
+              },
+              "score": 0.5917279518058731,
+              "created_at": "2026-11-21T02:18:31.085946+00:00",
+              "updated_at": "2026-11-21T02:18:31.085946+00:00",
+              "raw_similarity_score": 0.5917279518058731,
+              "user_id": "58639b2f-f839-45f0-9c19-4ea530cbb982",
+              "agent_id": "ingestion_agent",
+              "run_id": "f00b4c0123594e4cbf037af17892972f",
+              "role": "user"
+            },
+            {
+              "id": "e0b8b784-6459-47cc-b97f-ac9c961dbdb1",
+              "memory": "ATO signal for account acct_1042: support={'reset_requests': 3, 'unusual_time': True, 'multiple_contacts': True} (confidence 0.7) from ingestion_agent. JSON: {\"signal_type\": \"support\", \"value\": \"{'reset_requests': 3, 'unusual_time': True, 'multiple_contacts': True}\", \"confidence\": 0.7, \"evidence_refs\": [\"764b7b55-143a-4b71-9e4d-05310214b07e\"], \"account_id\": \"acct_1042\"}",
+              "hash": "b5cfb254ec7cee3556a11feaf0b04195",
+              "metadata": {
+                "kind": "signal",
+                "account_id": "acct_1042",
+                "meko_datapack_id": "af60be6d-60a9-42fc-8301-b91507178d0b"
+              },
+              "score": 0.5916254247785445,
+              "created_at": "2026-11-21T03:10:02.192600+00:00",
+              "updated_at": "2026-11-21T03:10:02.192600+00:00",
+              "raw_similarity_score": 0.5916254247785445,
+              "user_id": "58639b2f-f839-45f0-9c19-4ea530cbb982",
+              "agent_id": "ingestion_agent",
+              "run_id": "1ac8411ee3bd47ab8f27f463b1343aa8",
+              "role": "user"
+            },
+            {
+              "id": "47b6bac1-1205-4358-89f4-0c91df83e1dc",
+              "memory": "ATO signal for account acct_1042: support={'reset_requests': 3, 'unusual_time': True, 'multiple_contacts': True} (confidence 0.7) from ingestion_agent. JSON: {\"signal_type\": \"support\", \"value\": \"{'reset_requests': 3, 'unusual_time': True, 'multiple_contacts': True}\", \"confidence\": 0.7, \"evidence_refs\": [\"2e6f7fa3-b280-4a26-8d48-a02cfa9d6ced\"], \"account_id\": \"acct_1042\"}",
+              "hash": "b6125be62492084c7fd55c73a03478c8",
+              "metadata": {
+                "kind": "signal",
+                "account_id": "acct_1042",
+                "meko_datapack_id": "af60be6d-60a9-42fc-8301-b91507178d0b"
+              },
+              "score": 0.5910622705430659,
+              "created_at": "2026-11-21T02:20:45.128947+00:00",
+              "updated_at": "2026-11-21T02:20:45.128947+00:00",
+              "raw_similarity_score": 0.5910622705430659,
+              "user_id": "58639b2f-f839-45f0-9c19-4ea530cbb982",
+              "agent_id": "ingestion_agent",
+              "run_id": "e4e74af696bb4ac0867dd875156ebec8",
+              "role": "user"
+            },
+            {
+              "id": "df6d51b8-58e3-407d-9f0e-592819667989",
+              "memory": "ATO signal for account acct_1042: support={'reset_requests': 3, 'unusual_time': True, 'multiple_contacts': True} (confidence 0.7) from ingestion_agent. JSON: {\"signal_type\": \"support\", \"value\": \"{'reset_requests': 3, 'unusual_time': True, 'multiple_contacts': True}\", \"confidence\": 0.7, \"evidence_refs\": [\"67ecd577-bbea-4f2c-be02-226b31a9134c\"], \"account_id\": \"acct_1042\"}",
+              "hash": "bc5ce6ffe00491867b26e216ec1ea010",
+              "metadata": {
+                "kind": "signal",
+                "account_id": "acct_1042",
+                "meko_datapack_id": "af60be6d-60a9-42fc-8301-b91507178d0b"
+              },
+              "score": 0.5904492335917823,
+              "created_at": "2026-11-21T02:16:07.372935+00:00",
+              "updated_at": "2026-11-21T02:16:07.372935+00:00",
+              "raw_similarity_score": 0.5904492335917823,
+              "user_id": "58639b2f-f839-45f0-9c19-4ea530cbb982",
+              "agent_id": "ingestion_agent",
+              "run_id": "721e8002548d4a4380fca9b82be9d471",
+              "role": "user"
+            },
+            {
+              "id": "7140a0c4-dd20-45e3-8519-190c34748c05",
+              "memory": "ATO signal for account acct_1042: support={'reset_requests': 3, 'unusual_time': True, 'multiple_contacts': True} (confidence 0.7) from ingestion_agent. JSON: {\"signal_type\": \"support\", \"value\": \"{'reset_requests': 3, 'unusual_time': True, 'multiple_contacts': True}\", \"confidence\": 0.7, \"evidence_refs\": [\"2e0c0a92-b6cb-4ddb-8126-b7694ade3380\"], \"account_id\": \"acct_1042\"}",
+              "hash": "55954d38d0ddcfcf826e54423d288973",
+              "metadata": {
+                "kind": "signal",
+                "account_id": "acct_1042",
+                "meko_datapack_id": "af60be6d-60a9-42fc-8301-b91507178d0b"
+              },
+              "score": 0.5904208073645777,
+              "created_at": "2026-11-21T02:14:56.499983+00:00",
+              "updated_at": "2026-11-21T02:14:56.499983+00:00",
+              "raw_similarity_score": 0.5904208073645777,
+              "user_id": "58639b2f-f839-45f0-9c19-4ea530cbb982",
+              "agent_id": "ingestion_agent",
+              "run_id": "3b2e69456a8a4768a338b6ea48169e4a",
+              "role": "user"
+            },
+            {
+              "id": "58af1aba-173a-4446-83f3-c4c0c124764f",
+              "memory": "ATO signal for account acct_1042: support={'reset_requests': 3, 'unusual_time': True, 'multiple_contacts': True} (confidence 0.7) from ingestion_agent. JSON: {\"signal_type\": \"support\", \"value\": \"{'reset_requests': 3, 'unusual_time': True, 'multiple_contacts': True}\", \"confidence\": 0.7, \"evidence_refs\": [\"517214b3-b3b2-43aa-91c0-da1cf1e3e74b\"], \"account_id\": \"acct_1042\"}",
+              "hash": "105696619521174351449878b55f9462",
+              "metadata": {
+                "kind": "signal",
+                "account_id": "acct_1042",
+                "meko_datapack_id": "af60be6d-60a9-42fc-8301-b91507178d0b"
+              },
+              "score": 0.5900093858340012,
+              "created_at": "2026-11-21T04:41:13.208811+00:00",
+              "updated_at": "2026-11-21T04:41:13.208811+00:00",
+              "raw_similarity_score": 0.5900093858340012,
+              "user_id": "58639b2f-f839-45f0-9c19-4ea530cbb982",
+              "agent_id": "ingestion_agent",
+              "run_id": "9b7dfcbb63184c75b0db4b8cb4530d3e",
+              "role": "user"
+            },
+            {
+              "id": "7dd0833b-cd87-43e7-945d-29242977e64a",
+              "memory": "ATO signal for account acct_1042: support={'reset_requests': 3, 'unusual_time': True, 'multiple_contacts': True} (confidence 0.7) from ingestion_agent. JSON: {\"signal_type\": \"support\", \"value\": \"{'reset_requests': 3, 'unusual_time': True, 'multiple_contacts': True}\", \"confidence\": 0.7, \"evidence_refs\": [\"6cd6d587-bbce-4ce9-a9ee-8cdd43183e65\"], \"account_id\": \"acct_1042\"}",
+              "hash": "6191860bb7d4f858a82bd52e9a282f58",
+              "metadata": {
+                "kind": "signal",
+                "account_id": "acct_1042",
+                "meko_datapack_id": "af60be6d-60a9-42fc-8301-b91507178d0b"
+              },
+              "score": 0.5895449692588248,
+              "created_at": "2026-11-21T04:34:53.188969+00:00",
+              "updated_at": "2026-11-21T04:34:53.188969+00:00",
+              "raw_similarity_score": 0.5895449692588248,
+              "user_id": "58639b2f-f839-45f0-9c19-4ea530cbb982",
+              "agent_id": "ingestion_agent",
+              "run_id": "ab201a3754fa4b77a18fe8d97ecc0135",
+              "role": "user"
+            },
+            {
+              "id": "3c6c0e11-b6e2-44d1-83cd-a6f6ef5e34a2",
+              "memory": "ATO signal for account acct_1042: reset={'after_failures': True, 'unusual_time': True} (confidence 0.7) from ingestion_agent. JSON: {\"signal_type\": \"reset\", \"value\": \"{'after_failures': True, 'unusual_time': True}\", \"confidence\": 0.7, \"evidence_refs\": [\"66989280-b7a4-428f-8b91-32812fd92789\"], \"account_id\": \"acct_1042\"}",
+              "hash": "b633c28a4bda012191fb57c16994cc06",
+              "metadata": {
+                "kind": "signal",
+                "account_id": "acct_1042",
+                "meko_datapack_id": "af60be6d-60a9-42fc-8301-b91507178d0b"
+              },
+              "score": 0.5814295184661771,
+              "created_at": "2026-11-21T02:16:05.410455+00:00",
+              "updated_at": "2026-11-21T02:16:05.410455+00:00",
+              "raw_similarity_score": 0.5814295184661771,
+              "user_id": "58639b2f-f839-45f0-9c19-4ea530cbb982",
+              "agent_id": "ingestion_agent",
+              "run_id": "721e8002548d4a4380fca9b82be9d471",
+              "role": "user"
+            },
+            {
+              "id": "7274e0c1-2253-44cd-951a-84f489346b50",
+              "memory": "ATO signal for account acct_1042: reset={'after_failures': True, 'unusual_time': True} (confidence 0.7) from ingestion_agent. JSON: {\"signal_type\": \"reset\", \"value\": \"{'after_failures': True, 'unusual_time': True}\", \"confidence\": 0.7, \"evidence_refs\": [\"16e3528b-a278-4915-8257-26a9bbba47f3\"], \"account_id\": \"acct_1042\"}",
+              "hash": "88f2181b4bac56116ce219044ef7b731",
+              "metadata": {
+                "kind": "signal",
+                "account_id": "acct_1042",
+                "meko_datapack_id": "af60be6d-60a9-42fc-8301-b91507178d0b"
+              },
+              "score": 0.5812671920014364,
+              "created_at": "2026-11-21T03:10:00.467703+00:00",
+              "updated_at": "2026-11-21T03:10:00.467703+00:00",
+              "raw_similarity_score": 0.5812671920014364,
+              "user_id": "58639b2f-f839-45f0-9c19-4ea530cbb982",
+              "agent_id": "ingestion_agent",
+              "run_id": "1ac8411ee3bd47ab8f27f463b1343aa8",
+              "role": "user"
+            },
+            {
+              "id": "da4a16c9-c3bb-4b95-9d25-02e5999dae16",
+              "memory": "ATO signal for account acct_1042: reset={'after_failures': True, 'unusual_time': True} (confidence 0.7) from ingestion_agent. JSON: {\"signal_type\": \"reset\", \"value\": \"{'after_failures': True, 'unusual_time': True}\", \"confidence\": 0.7, \"evidence_refs\": [\"6942cbf6-1320-4174-95af-888e9dd788e7\"], \"account_id\": \"acct_1042\"}",
+              "hash": "eadb31f61e2964756b2319ae74eb43fd",
+              "metadata": {
+                "kind": "signal",
+                "account_id": "acct_1042",
+                "meko_datapack_id": "af60be6d-60a9-42fc-8301-b91507178d0b"
+              },
+              "score": 0.5805499160694246,
+              "created_at": "2026-11-21T02:20:43.601777+00:00",
+              "updated_at": "2026-11-21T02:20:43.601777+00:00",
+              "raw_similarity_score": 0.5805499160694246,
+              "user_id": "58639b2f-f839-45f0-9c19-4ea530cbb982",
+              "agent_id": "ingestion_agent",
+              "run_id": "e4e74af696bb4ac0867dd875156ebec8",
+              "role": "user"
+            },
+            {
+              "id": "802050e5-7ea0-4539-8685-22c53bd38cd7",
+              "memory": "ATO signal for account acct_1042: reset={'after_failures': True, 'unusual_time': True} (confidence 0.7) from ingestion_agent. JSON: {\"signal_type\": \"reset\", \"value\": \"{'after_failures': True, 'unusual_time': True}\", \"confidence\": 0.7, \"evidence_refs\": [\"be38669f-4326-4126-8fc0-6b093ebaff32\"], \"account_id\": \"acct_1042\"}",
+              "hash": "0cdbac9e6449bed54c0b1087fbc97e78",
+              "metadata": {
+                "kind": "signal",
+                "account_id": "acct_1042",
+                "meko_datapack_id": "af60be6d-60a9-42fc-8301-b91507178d0b"
+              },
+              "score": 0.5804329558981962,
+              "created_at": "2026-11-21T04:34:51.747275+00:00",
+              "updated_at": "2026-11-21T04:34:51.747275+00:00",
+              "raw_similarity_score": 0.5804329558981962,
+              "user_id": "58639b2f-f839-45f0-9c19-4ea530cbb982",
+              "agent_id": "ingestion_agent",
+              "run_id": "ab201a3754fa4b77a18fe8d97ecc0135",
+              "role": "user"
+            }
+          ],
+          "conversation": {
+            "hits": [],
+            "thread": []
+          }
+        },
+        "token_savings": {
+          "total_tokens": 9000,
+          "knowledge_base": {
+            "tokens_sent": 9000,
+            "tokens_saved": 0
+          },
+          "memory": {
+            "tokens_sent": 4000,
+            "tokens_saved": 5000
+          },
+          "tokens_saved": 23000
+        },
+        "match_quality": "mid",
+        "agent_hint": "Partial match: use these results, and tell the user what is missing."
+      },
+      "error": null
+    },
+    {
+      "trace_id": "6fcfb63f-be5d-473d-adee-f3c86282b97c",
+      "span_id": "3516d2825c8e97ca",
+      "parent_span_id": null,
+      "operation": "conversation_create",
+      "duration_ms": 1112.31,
+      "tokens": 86,
+      "status": "ok",
+      "timestamp": 1795236149.898761,
+      "args": {
+        "agent_id": "meko_agent",
+        "title": "Memory list all",
+        "metadata": "{\"kind\": \"memory_get_all\"}",
+        "datapack_id": "af60be6d-60a9-42fc-8301-b91507178d0b"
+      },
+      "result": {
+        "id": "f29b007ca85548558cc30f0466858a26",
+        "agent_id": "meko_agent",
+        "user_id": "58639b2f-f839-45f0-9c19-4ea530cbb982",
+        "app_id": null,
+        "run_id": null,
+        "title": "Memory list all",
+        "metadata": {
+          "kind": "memory_get_all"
+        },
+        "created_at": "2026-11-21T04:41:22.880315+00:00",
+        "updated_at": "2026-11-21T04:41:22.880315+00:00"
+      },
+      "error": null
+    },
+    {
+      "trace_id": "6fcfb63f-be5d-473d-adee-f3c86282b97c",
+      "span_id": "1686bd90da06b65e",
+      "parent_span_id": null,
+      "operation": "memory_get_all",
+      "duration_ms": 1438.41,
+      "tokens": 1980,
+      "status": "ok",
+      "timestamp": 1795236151.337312,
+      "args": {
+        "conversation_id": "f29b007ca85548558cc30f0466858a26",
+        "page_size": 10,
+        "datapack_id": "af60be6d-60a9-42fc-8301-b91507178d0b"
+      },
+      "result": {
+        "criteria": {
+          "datapack_id": "af60be6d-60a9-42fc-8301-b91507178d0b",
+          "user_id": "58639b2f-f839-45f0-9c19-4ea530cbb982",
+          "page": 1,
+          "page_size": 10
+        },
+        "memories": [
+          {
+            "id": "95165509-52ba-483b-831c-57c6da5b27e9",
+            "data": "ATO signal for account acct_1042: transaction={'new_payee': True, 'test_payment': True, 'limit_change': False} (confidence 0.7) from ingestion_agent. JSON: {\"signal_type\": \"transaction\", \"value\": \"{'new_payee': True, 'test_payment': True, 'limit_change': False}\", \"confidence\": 0.7, \"evidence_refs\": [\"b9d6ac98-91b9-46a9-b670-90d27410aed0\"], \"account_id\": \"acct_1042\"}",
+            "agent_id": "ingestion_agent",
+            "conversation_id": "9b7dfcbb-6318-4c75-b0db-4b8cb4530d3e",
+            "user_id": "58639b2f-f839-45f0-9c19-4ea530cbb982",
+            "user_name": "Uncle Sam",
+            "user_email": "unclesamson049@gmail.com",
+            "created_at": "2026-11-21T04:41:14.717027Z",
+            "is_mine": true
+          },
+          {
+            "id": "58af1aba-173a-4446-83f3-c4c0c124764f",
+            "data": "ATO signal for account acct_1042: support={'reset_requests': 3, 'unusual_time': True, 'multiple_contacts': True} (confidence 0.7) from ingestion_agent. JSON: {\"signal_type\": \"support\", \"value\": \"{'reset_requests': 3, 'unusual_time': True, 'multiple_contacts': True}\", \"confidence\": 0.7, \"evidence_refs\": [\"517214b3-b3b2-43aa-91c0-da1cf1e3e74b\"], \"account_id\": \"acct_1042\"}",
+            "agent_id": "ingestion_agent",
+            "conversation_id": "9b7dfcbb-6318-4c75-b0db-4b8cb4530d3e",
+            "user_id": "58639b2f-f839-45f0-9c19-4ea530cbb982",
+            "user_name": "Uncle Sam",
+            "user_email": "unclesamson049@gmail.com",
+            "created_at": "2026-11-21T04:41:13.224639Z",
+            "is_mine": true
+          },
+          {
+            "id": "82161118-d4a4-40bd-bbfe-f3434a21ebc7",
+            "data": "ATO signal for account acct_1042: reset={'after_failures': True, 'unusual_time': True} (confidence 0.7) from ingestion_agent. JSON: {\"signal_type\": \"reset\", \"value\": \"{'after_failures': True, 'unusual_time': True}\", \"confidence\": 0.7, \"evidence_refs\": [\"eee04438-9942-4ffe-8092-7078585f6533\"], \"account_id\": \"acct_1042\"}",
+            "agent_id": "ingestion_agent",
+            "conversation_id": "9b7dfcbb-6318-4c75-b0db-4b8cb4530d3e",
+            "user_id": "58639b2f-f839-45f0-9c19-4ea530cbb982",
+            "user_name": "Uncle Sam",
+            "user_email": "unclesamson049@gmail.com",
+            "created_at": "2026-11-21T04:41:11.888592Z",
+            "is_mine": true
+          },
+          {
+            "id": "5275bc2c-9629-412c-aeac-0adb1abee8f1",
+            "data": "ATO signal for account acct_1042: device={'is_new_device': True, 'is_emulator': True} (confidence 0.7) from ingestion_agent. JSON: {\"signal_type\": \"device\", \"value\": \"{'is_new_device': True, 'is_emulator': True}\", \"confidence\": 0.7, \"evidence_refs\": [\"08ca5e7c-c143-4af9-976d-579aa18acaed\"], \"account_id\": \"acct_1042\"}",
+            "agent_id": "ingestion_agent",
+            "conversation_id": "9b7dfcbb-6318-4c75-b0db-4b8cb4530d3e",
+            "user_id": "58639b2f-f839-45f0-9c19-4ea530cbb982",
+            "user_name": "Uncle Sam",
+            "user_email": "unclesamson049@gmail.com",
+            "created_at": "2026-11-21T04:41:10.619182Z",
+            "is_mine": true
+          },
+          {
+            "id": "35a5a058-6077-463c-9aa1-fe6a53c07876",
+            "data": "ATO signal for account acct_1042: login={'failed_count': 12, 'failure_rate': 0.9, 'new_location': True} (confidence 0.7) from ingestion_agent. JSON: {\"signal_type\": \"login\", \"value\": \"{'failed_count': 12, 'failure_rate': 0.9, 'new_location': True}\", \"confidence\": 0.7, \"evidence_refs\": [\"3496ebb7-0be5-47fd-9395-b193ea86992c\"], \"account_id\": \"acct_1042\"}",
+            "agent_id": "ingestion_agent",
+            "conversation_id": "9b7dfcbb-6318-4c75-b0db-4b8cb4530d3e",
+            "user_id": "58639b2f-f839-45f0-9c19-4ea530cbb982",
+            "user_name": "Uncle Sam",
+            "user_email": "unclesamson049@gmail.com",
+            "created_at": "2026-11-21T04:41:09.253879Z",
+            "is_mine": true
+          },
+          {
+            "id": "83a4184d-bcaf-405b-be5e-9a3d23ec5a8b",
+            "data": "ATO signal for account acct_1042: transaction={'new_payee': True, 'test_payment': True, 'limit_change': False} (confidence 0.7) from ingestion_agent. JSON: {\"signal_type\": \"transaction\", \"value\": \"{'new_payee': True, 'test_payment': True, 'limit_change': False}\", \"confidence\": 0.7, \"evidence_refs\": [\"3346ffa4-d1cc-4ac6-9084-eb074278f3b6\"], \"account_id\": \"acct_1042\"}",
+            "agent_id": "ingestion_agent",
+            "conversation_id": "ab201a37-54fa-4b77-a18f-e8d97ecc0135",
+            "user_id": "58639b2f-f839-45f0-9c19-4ea530cbb982",
+            "user_name": "Uncle Sam",
+            "user_email": "unclesamson049@gmail.com",
+            "created_at": "2026-11-21T04:34:54.497743Z",
+            "is_mine": true
+          },
+          {
+            "id": "7dd0833b-cd87-43e7-945d-29242977e64a",
+            "data": "ATO signal for account acct_1042: support={'reset_requests': 3, 'unusual_time': True, 'multiple_contacts': True} (confidence 0.7) from ingestion_agent. JSON: {\"signal_type\": \"support\", \"value\": \"{'reset_requests': 3, 'unusual_time': True, 'multiple_contacts': True}\", \"confidence\": 0.7, \"evidence_refs\": [\"6cd6d587-bbce-4ce9-a9ee-8cdd43183e65\"], \"account_id\": \"acct_1042\"}",
+            "agent_id": "ingestion_agent",
+            "conversation_id": "ab201a37-54fa-4b77-a18f-e8d97ecc0135",
+            "user_id": "58639b2f-f839-45f0-9c19-4ea530cbb982",
+            "user_name": "Uncle Sam",
+            "user_email": "unclesamson049@gmail.com",
+            "created_at": "2026-11-21T04:34:53.203332Z",
+            "is_mine": true
+          },
+          {
+            "id": "802050e5-7ea0-4539-8685-22c53bd38cd7",
+            "data": "ATO signal for account acct_1042: reset={'after_failures': True, 'unusual_time': True} (confidence 0.7) from ingestion_agent. JSON: {\"signal_type\": \"reset\", \"value\": \"{'after_failures': True, 'unusual_time': True}\", \"confidence\": 0.7, \"evidence_refs\": [\"be38669f-4326-4126-8fc0-6b093ebaff32\"], \"account_id\": \"acct_1042\"}",
+            "agent_id": "ingestion_agent",
+            "conversation_id": "ab201a37-54fa-4b77-a18f-e8d97ecc0135",
+            "user_id": "58639b2f-f839-45f0-9c19-4ea530cbb982",
+            "user_name": "Uncle Sam",
+            "user_email": "unclesamson049@gmail.com",
+            "created_at": "2026-11-21T04:34:51.760824Z",
+            "is_mine": true
+          },
+          {
+            "id": "d8487c70-9159-4141-917b-8008f68588fe",
+            "data": "ATO signal for account acct_1042: device={'is_new_device': True, 'is_emulator': True} (confidence 0.7) from ingestion_agent. JSON: {\"signal_type\": \"device\", \"value\": \"{'is_new_device': True, 'is_emulator': True}\", \"confidence\": 0.7, \"evidence_refs\": [\"5464b458-4d55-4153-b014-4e205d63fa18\"], \"account_id\": \"acct_1042\"}",
+            "agent_id": "ingestion_agent",
+            "conversation_id": "ab201a37-54fa-4b77-a18f-e8d97ecc0135",
+            "user_id": "58639b2f-f839-45f0-9c19-4ea530cbb982",
+            "user_name": "Uncle Sam",
+            "user_email": "unclesamson049@gmail.com",
+            "created_at": "2026-11-21T04:34:50.317806Z",
+            "is_mine": true
+          },
+          {
+            "id": "7a9bfb94-9ff0-4333-91d1-109a7d59b541",
+            "data": "ATO signal for account acct_1042: login={'failed_count': 12, 'failure_rate': 0.9, 'new_location': True} (confidence 0.7) from ingestion_agent. JSON: {\"signal_type\": \"login\", \"value\": \"{'failed_count': 12, 'failure_rate': 0.9, 'new_location': True}\", \"confidence\": 0.7, \"evidence_refs\": [\"8286f9d1-6f14-4aae-a3b3-c42b22093868\"], \"account_id\": \"acct_1042\"}",
+            "agent_id": "ingestion_agent",
+            "conversation_id": "ab201a37-54fa-4b77-a18f-e8d97ecc0135",
+            "user_id": "58639b2f-f839-45f0-9c19-4ea530cbb982",
+            "user_name": "Uncle Sam",
+            "user_email": "unclesamson049@gmail.com",
+            "created_at": "2026-11-21T04:34:49.019104Z",
+            "is_mine": true
+          }
+        ],
+        "top_k": 0,
+        "total": 40,
+        "page": 1,
+        "page_size": 10,
+        "total_pages": 4,
+        "langfuse_project_id": "cmwm221fq0j12cn078feoyhz8"
+      },
+      "error": null
+    }
+  ],
+  "summary": {
+    "trace_id": "6fcfb63f-be5d-473d-adee-f3c86282b97c",
+    "total_events": 12,
+    "total_latency_seconds": 22.832,
+    "total_estimated_tokens": 12361,
+    "error_count": 0,
+    "tools_called": [
+      "context_search",
+      "conversation_create",
+      "memory_add",
+      "memory_get_all",
+      "memory_search"
+    ],
+    "start_time": 1795236126.0584,
+    "duration_seconds": 25.2795
+  }
+}

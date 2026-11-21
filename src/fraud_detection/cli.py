@@ -35,6 +35,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import pathlib
 import sys
 from datetime import datetime, timedelta, timezone
 from typing import Optional
@@ -55,7 +56,7 @@ from .orchestration import Orchestrator
 from .baseline import BaselineEvaluator, BaselineResult
 from .policy import PolicyEngine
 from .audit import AuditLog
-from .meko_adapter import MekoAdapter
+from .meko_adapter import MekoAdapter, MekoAdapterError
 from .containment import ContainmentGate, ContainmentProposal
 from .agents import (
     LoginAgent,
@@ -214,6 +215,7 @@ async def run_phase1(
         ),
         default_tool_budget=settings.default_tool_call_budget,
         default_meko_budget=settings.default_meko_retrieval_budget,
+        default_meko_content_token_budget=settings.meko_max_retrieval_content_tokens,
         default_token_budget=settings.default_token_budget,
         default_deadline_seconds=settings.default_wall_clock_deadline_seconds,
         storage=storage,
@@ -298,7 +300,7 @@ async def run_phase1(
     findings_shared: list[EvidenceFinding] = []
     correlated_shared: Optional[EvidenceFinding] = None
 
-    meko_shared = MekoAdapter(settings)
+    meko_shared = MekoAdapter(settings, trace_id=investigation.trace_id)
     async with meko_shared.connect() as meko_session:
         for agent_cls, event in [
             (LoginAgent, events[0]),
@@ -338,36 +340,85 @@ async def run_phase1(
             f"reason_codes={correlated_shared.reason_codes})"
         )
 
-        # Write signals to Meko memory
-        for event in events:
-            await meko_shared.write_signal(
-                agent_id="ingestion_agent",
-                account_id=event.account_id,
-                signal_type=event.event_type.value,
-                value=str(event.payload),
-                confidence=0.7,
-                evidence_refs=[event.event_id],
-            )
-            # Phase 3: enqueue to outbox for durable Meko delivery
-            outbox.enqueue(
-                aggregate_type="event",
-                aggregate_id=event.event_id,
-                event_type="meko_write_signal",
-                payload={
-                    "agent_id": "ingestion_agent",
-                    "account_id": event.account_id,
-                    "signal_type": event.event_type.value,
-                    "value": str(event.payload),
-                    "confidence": 0.7,
-                    "evidence_refs": [event.event_id],
-                },
-            )
-        print(f"[meko] wrote {len(events)} signal(s) to memory")
+        # Write signals to Meko memory using shared conversation
+        # (enables Meko built-in dedup and server-side LLM extraction)
+        shared_conv_id = await meko_shared.create_conversation(
+            "ingestion_agent",
+            f"ATO signals for account {ACCOUNT_ID}",
+            {"kind": "signal_batch", "account_id": ACCOUNT_ID},
+        )
+        signal_dicts = [
+            {
+                "signal_type": event.event_type.value,
+                "value": str(event.payload),
+                "confidence": 0.7,
+                "evidence_refs": [event.event_id],
+                "account_id": event.account_id,
+            }
+            for event in events
+        ]
+        batch_results = await meko_shared.batch_write_signals(
+            signal_dicts,
+            shared_conversation_id=shared_conv_id,
+            agent_id="ingestion_agent",
+            account_id=ACCOUNT_ID,
+        )
+        print(f"[meko] wrote {len(batch_results)} signal(s) to memory (shared conversation)")
 
-        # Search context via Meko
+        # Memory-only search (memories, not KB/conversations)
+        mem_results = await meko_shared.memory_search(
+            query=f"ATO signals for account {ACCOUNT_ID}",
+            limit=10,
+            agent_id="ingestion_agent",
+        )
+        mem_count = len(mem_results.get("matches", [])) if isinstance(mem_results, dict) else 0
+        # Estimate content token size (~4 chars per token heuristic)
+        mem_content_str = str(mem_results) if mem_results else ""
+        mem_content_tokens = max(1, len(mem_content_str) // 4)
+        if not orchestrator.record_meko_retrieval_content_tokens(
+            investigation.investigation_id, mem_content_tokens
+        ):
+            print(
+                f"[budget] Meko retrieval content token budget exhausted "
+                f"after memory_search ({mem_content_tokens} tokens)"
+            )
+        print(f"[meko] memory search returned {mem_count} memories "
+              f"({mem_content_tokens} estimated content tokens)")
+
+        # Context search (memory + KB + conversations in parallel buckets)
         ctx = await meko_shared.correlate(ACCOUNT_ID)
         match_quality = ctx.get("match_quality") if isinstance(ctx, dict) else "n/a"
-        print(f"[meko] context search match_quality={match_quality}")
+        ctx_content_str = str(ctx) if ctx else ""
+        ctx_content_tokens = max(1, len(ctx_content_str) // 4)
+        if not orchestrator.record_meko_retrieval_content_tokens(
+            investigation.investigation_id, ctx_content_tokens
+        ):
+            print(
+                f"[budget] Meko retrieval content token budget exhausted "
+                f"after context_search ({ctx_content_tokens} tokens)"
+            )
+        print(f"[meko] context search match_quality={match_quality} "
+              f"({ctx_content_tokens} estimated content tokens)")
+
+        # List all memories (paged)
+        all_memories = await meko_shared.memory_get_all(page_size=10)
+        total_pages = all_memories.get("total_pages", 0) if isinstance(all_memories, dict) else 0
+        mem_count_all = len(all_memories.get("results", [])) if isinstance(all_memories, dict) else 0
+        print(f"[meko] memory_get_all: {mem_count_all} memories, {total_pages} total pages")
+
+        # Export Meko trace for observability and chain-of-thought traceability
+        trace_path = pathlib.Path("traces") / f"{investigation.investigation_id}.json"
+        trace_path.parent.mkdir(parents=True, exist_ok=True)
+        meko_trace = meko_shared.export_trace_meko_format()
+        trace_path.write_text(json.dumps(meko_trace, indent=2))
+        trace_summary = meko_shared.get_trace_summary()
+        print(
+            f"[trace] trace_id={trace_summary['trace_id']} "
+            f"events={trace_summary['total_events']} "
+            f"latency={trace_summary['total_latency_seconds']}s "
+            f"tokens={trace_summary['total_estimated_tokens']} "
+            f"written to {trace_path}"
+        )
 
     # --- 4. Run agents WITHOUT shared Meko memory (baseline comparison) ---
     print("\n--- Phase 1b: No-shared-Meko baseline path ---\n")
@@ -378,6 +429,7 @@ async def run_phase1(
         ),
         default_tool_budget=settings.default_tool_call_budget,
         default_meko_budget=0,
+        default_meko_content_token_budget=0,
         default_token_budget=settings.default_token_budget,
         default_deadline_seconds=settings.default_wall_clock_deadline_seconds,
         storage=storage,
@@ -651,6 +703,7 @@ async def run_phase1(
           f"(no executable action path in Phase 1)")
     print(f"  Trace walkthroughs:       {len(traces)} written to {trace_path}")
     print(f"  Audit log:                {audit.log_path}")
+    print(f"  Meko retrieval content tokens: {orchestrator._investigations[investigation.investigation_id].meko_retrieval_content_tokens_used}")
     print("\nNo production signals were sent. No containment/action credentials exist.")
 
     # --- Phase 3: Durable storage summary and cleanup ----------------------
@@ -866,14 +919,69 @@ def main() -> int:
     """CLI entry point."""
     shadow_mode = True
     db_path = "fraud_detection.db"
+    upload_kb = False
     if "--no-shadow" in sys.argv:
         shadow_mode = False
         print("WARNING: --no-shadow disables shadow mode. "
               "This is a configuration change, not a Phase 1 default.")
+    if "--upload-kb" in sys.argv:
+        upload_kb = True
     for arg in sys.argv:
         if arg.startswith("--db="):
             db_path = arg.split("=", 1)[1]
+    if upload_kb:
+        return asyncio.run(run_kb_upload())
     return asyncio.run(run_phase1(shadow_mode=shadow_mode, db_path=db_path))
+
+
+async def run_kb_upload() -> int:
+    """Upload fraud playbook documents to the Meko knowledge base."""
+    import pathlib
+
+    settings = Settings()
+    print(f"=== Meko Knowledge Base Upload ===")
+    print(f"Datapack: {settings.meko_datapack_id}")
+    print(f"Endpoint: {settings.meko_mcp_url}")
+
+    playbook_dir = pathlib.Path("kb_playbooks")
+    if not playbook_dir.exists():
+        print(f"[error] Playbook directory not found: {playbook_dir}")
+        return 1
+
+    playbooks = sorted(playbook_dir.glob("*.md"))
+    if not playbooks:
+        print(f"[error] No playbook files found in {playbook_dir}")
+        return 1
+
+    print(f"Found {len(playbooks)} playbook(s) to upload:\n")
+    for pb in playbooks:
+        print(f"  - {pb.name}")
+
+    adapter = MekoAdapter(settings)
+    async with adapter.connect():
+        for playbook in playbooks:
+            print(f"\n[kb] Uploading {playbook.name}...")
+            try:
+                result = await adapter.upload_document_and_wait(
+                    str(playbook),
+                    agent_id="kb_upload_agent",
+                    poll_interval_seconds=2.0,
+                    max_poll_seconds=120.0,
+                )
+                if isinstance(result, dict):
+                    status = result.get("document_status", result.get("state", "unknown"))
+                    doc_id = result.get("document_key", result.get("document_id", "unknown"))
+                else:
+                    status = str(result)
+                    doc_id = "unknown"
+                print(f"[kb] {playbook.name}: status={status}, document_key={doc_id}")
+            except MekoAdapterError as e:
+                print(f"[kb] {playbook.name}: FAILED — {e}")
+                return 1
+
+    print(f"\n[kb] All {len(playbooks)} playbook(s) uploaded and indexed.")
+    print(f"Query with: context_search(force_source='knowledge_base')")
+    return 0
 
 
 if __name__ == "__main__":

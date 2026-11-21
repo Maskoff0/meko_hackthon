@@ -99,6 +99,7 @@ class Investigation(BaseModel):
     evidence_scopes: list[str] = Field(default_factory=list)
     tool_call_budget: int = 10
     meko_retrieval_budget: int = 5
+    meko_retrieval_content_token_budget: int = 500
     token_budget: int = 4000
     wall_clock_deadline_seconds: int = 60
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
@@ -106,6 +107,7 @@ class Investigation(BaseModel):
     policy_version: str = "2026-11-v1"
     findings: list[str] = Field(default_factory=list)  # finding ids
     error: Optional[str] = None
+    trace_id: Optional[str] = None
 
     class Config:
         use_enum_values = True
