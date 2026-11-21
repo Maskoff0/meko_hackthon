@@ -26,6 +26,7 @@ class Settings(BaseSettings):
     default_token_budget: int = Field(default=4000, ge=100, le=100000)
     default_wall_clock_deadline_seconds: int = Field(default=60, ge=1, le=600)
     meko_timeout_seconds: float = Field(default=5.0, ge=0.5, le=60.0)
+    meko_max_retrieval_content_tokens: int = Field(default=500, ge=0, le=100000)
 
     # Policy thresholds
     velocity_failed_login_threshold: int = Field(default=5, ge=1)

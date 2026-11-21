@@ -53,11 +53,13 @@ CREATE TABLE IF NOT EXISTS investigations (
     evidence_scopes TEXT NOT NULL DEFAULT '[]',
     tool_call_budget INTEGER NOT NULL DEFAULT 10,
     meko_retrieval_budget INTEGER NOT NULL DEFAULT 5,
+    meko_retrieval_content_token_budget INTEGER NOT NULL DEFAULT 500,
     token_budget INTEGER NOT NULL DEFAULT 4000,
     wall_clock_deadline_seconds INTEGER NOT NULL DEFAULT 60,
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL,
-    error TEXT
+    error TEXT,
+    trace_id TEXT
 );
 
 CREATE TABLE IF NOT EXISTS findings (
@@ -160,7 +162,25 @@ class Storage:
         self._conn = sqlite3.connect(str(self.db_path), check_same_thread=False)
         self._conn.row_factory = sqlite3.Row
         self._conn.executescript(_SCHEMA)
+        self._migrate_schema()
         self._conn.commit()
+
+    def _migrate_schema(self) -> None:
+        """Add missing columns to existing databases."""
+        # Check if meko_retrieval_content_token_budget column exists
+        cols = [
+            row[1]
+            for row in self.conn.execute("PRAGMA table_info(investigations)").fetchall()
+        ]
+        if "meko_retrieval_content_token_budget" not in cols:
+            self.conn.execute(
+                "ALTER TABLE investigations ADD COLUMN "
+                "meko_retrieval_content_token_budget INTEGER NOT NULL DEFAULT 500"
+            )
+        if "trace_id" not in cols:
+            self.conn.execute(
+                "ALTER TABLE investigations ADD COLUMN trace_id TEXT"
+            )
 
     def close(self) -> None:
         """Close the database connection."""
@@ -233,13 +253,13 @@ class Storage:
         self.conn.execute(
             """
             INSERT OR REPLACE INTO investigations
-            (investigation_id, account_id, trigger_event_id, trigger_type,
-             hypothesis, status, policy_version, allowed_tools,
-             evidence_scopes, tool_call_budget, meko_retrieval_budget,
-             token_budget, wall_clock_deadline_seconds, created_at,
-             updated_at, error)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """,
+             (investigation_id, account_id, trigger_event_id, trigger_type,
+              hypothesis, status, policy_version, allowed_tools,
+              evidence_scopes, tool_call_budget, meko_retrieval_budget,
+              meko_retrieval_content_token_budget, token_budget, wall_clock_deadline_seconds, created_at,
+              updated_at, error, trace_id)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+             """,
             (
                 inv.investigation_id,
                 inv.account_id,
@@ -252,11 +272,13 @@ class Storage:
                 json.dumps(getattr(inv, "evidence_scopes", [])),
                 getattr(inv, "tool_call_budget", 10),
                 getattr(inv, "meko_retrieval_budget", 5),
+                getattr(inv, "meko_retrieval_content_token_budget", 500),
                 getattr(inv, "token_budget", 4000),
                 getattr(inv, "wall_clock_deadline_seconds", 60),
                 inv.created_at.isoformat() if hasattr(inv.created_at, "isoformat") else str(inv.created_at),
                 inv.updated_at.isoformat() if hasattr(inv.updated_at, "isoformat") else str(inv.updated_at),
                 getattr(inv, "error", None),
+                getattr(inv, "trace_id", None),
             ),
         )
         self.conn.commit()

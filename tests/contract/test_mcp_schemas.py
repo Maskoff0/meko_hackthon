@@ -32,6 +32,8 @@ def test_mcp_server_has_all_analyst_tools():
         "explain_trace",
         "explain_investigation",
         "lookup_patterns",
+        "query_knowledge",
+        "get_artifact",
         "draft_case_note",
         "draft_customer_communication",
         "draft_regulator_explanation",
@@ -49,9 +51,9 @@ def test_mcp_server_has_all_analyst_tools():
 
 
 def test_mcp_server_tool_count():
-    """Exactly 12 analyst copilot tools are registered."""
+    """Exactly 14 analyst copilot tools are registered."""
     tools = server._tool_manager.list_tools()
-    assert len(tools) == 12
+    assert len(tools) == 14
 
 
 def _get_tool_fn(name: str):
@@ -145,6 +147,26 @@ def test_lookup_patterns_required_params():
     assert params["description"]["required"] is True
     assert params["account_id"]["required"] is False
     assert params["limit"]["required"] is False
+
+
+# ---------------------------------------------------------------------------
+# query_knowledge contract (knowledge base search)
+# ---------------------------------------------------------------------------
+
+
+def test_query_knowledge_required_params():
+    """query_knowledge requires query."""
+    params = _tool_params("query_knowledge")
+
+    assert params["query"]["required"] is True
+    assert params["limit"]["required"] is False
+
+
+def test_get_artifact_required_params():
+    """get_artifact requires artifact_hash."""
+    params = _tool_params("get_artifact")
+
+    assert params["artifact_hash"]["required"] is True
 
 
 # ---------------------------------------------------------------------------
