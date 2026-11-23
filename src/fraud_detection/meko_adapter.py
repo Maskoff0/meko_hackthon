@@ -415,12 +415,18 @@ class MekoAdapter:
         return await self.call("memory_add", **args)
 
     # --- Connect the dots / remember past attacks ---------------------------
-    async def correlate(self, account_id: str, agent_id: str = "correlator_agent"):
-        conversation_id = await self.create_conversation(
-            agent_id,
-            f"ATO correlation for account {account_id}",
-            {"kind": "correlation", "account_id": account_id},
-        )
+    async def correlate(
+        self,
+        account_id: str,
+        agent_id: str = "correlator_agent",
+        conversation_id: Optional[str] = None,
+    ):
+        if conversation_id is None:
+            conversation_id = await self.create_conversation(
+                agent_id,
+                f"ATO correlation for account {account_id}",
+                {"kind": "correlation", "account_id": account_id},
+            )
         return await self.call(
             "context_search",
             query=(
@@ -433,13 +439,17 @@ class MekoAdapter:
         )
 
     async def past_attack_patterns(
-        self, description: str, agent_id: str = "correlator_agent"
+        self,
+        description: str,
+        agent_id: str = "correlator_agent",
+        conversation_id: Optional[str] = None,
     ):
-        conversation_id = await self.create_conversation(
-            agent_id,
-            "ATO past-attack pattern search",
-            {"kind": "past_attack_patterns"},
-        )
+        if conversation_id is None:
+            conversation_id = await self.create_conversation(
+                agent_id,
+                "ATO past-attack pattern search",
+                {"kind": "past_attack_patterns"},
+            )
         return await self.call(
             "context_search",
             query=description,
@@ -448,6 +458,28 @@ class MekoAdapter:
             force_source="knowledge_base",
             limit=10,
         )
+
+    async def context_search_datapack(
+        self,
+        query: str,
+        limit: int = 10,
+        agent_id: str = "analyst_datapack_search",
+        force_source: Optional[str] = None,
+    ) -> Any:
+        """Search the entire datapack without conversation scoping.
+
+        Calls context_search without a conversation_id so Meko searches
+        across all memories, conversations, and the knowledge base in the
+        datapack, rather than being limited to a single conversation.
+        """
+        args: dict[str, Any] = {
+            "query": query,
+            "limit": limit,
+            "agent_id": agent_id,
+        }
+        if force_source is not None:
+            args["force_source"] = force_source
+        return await self.call("context_search", **args)
 
     # --- Memory search (memories only, not KB/conversations) -------------
     async def memory_search(

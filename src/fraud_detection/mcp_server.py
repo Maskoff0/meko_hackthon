@@ -12,8 +12,7 @@ from __future__ import annotations
 import json
 from typing import Any
 
-from mcp.server.mcpserver import MCPServer
-from mcp.server.mcpserver.context import Context
+from mcp.server.fastmcp import FastMCP
 
 from .analyst import (
     CaseBriefService,
@@ -30,12 +29,11 @@ from .domain import (
     EvidenceFinding,
     ShadowRecommendation,
 )
-from .meko_adapter import MekoAdapter
+from .meko_adapter import MekoAdapter, MekoAdapterError
 from .settings import Settings
 
-server = MCPServer(
+server = FastMCP(
     name="meko-analyst-copilot",
-    version="0.1.0",
     instructions="Analyst copilot for fraud detection investigations. "
     "Provides case briefs with citations, trace explanations, pattern lookup, "
     "drafting, triage ordering, and feedback capture.",
@@ -250,17 +248,88 @@ async def lookup_patterns(
 ) -> str:
     """Run hybrid retrieval against the knowledge base and past confirmed cases.
 
-    Surfaces what's similar and what's different for the analyst.
-    Meko search does the work.
+    Creates a conversation and searches it without force_source so Meko
+    searches memory, knowledge base, and conversations.
     """
     meko = MekoAdapter(settings)
-    async with meko.connect() as session:
-        pattern_service.meko = session
-        result = await pattern_service.lookup_patterns(
-            description=description,
-            account_id=account_id,
-            limit=limit,
-        )
+    try:
+        async with meko.connect() as session:
+            pattern_service.meko = session
+
+            conversation_id = await session.create_conversation(
+                "analyst_pattern_lookup",
+                "Pattern lookup",
+                {"kind": "pattern_lookup"},
+            )
+
+            # Search everything (memory + KB + conversations)
+            hybrid_result = await session.call(
+                "context_search",
+                query=description,
+                conversation_id=conversation_id,
+                limit=limit,
+                agent_id="analyst_pattern_lookup",
+            )
+
+            # KB-only search for similar patterns
+            kb_result = await session.call(
+                "context_search",
+                query=description,
+                conversation_id=conversation_id,
+                force_source="knowledge_base",
+                limit=limit,
+                agent_id="analyst_pattern_lookup",
+            )
+
+            # Extract similar patterns from KB results (results.knowledge_base is a list)
+            kb_list = []
+            if isinstance(kb_result, dict):
+                kb_list = kb_result.get("results", {}).get("knowledge_base", [])
+            if not isinstance(kb_list, list):
+                kb_list = []
+
+            similar = []
+            for m in kb_list[:10]:
+                if isinstance(m, dict):
+                    similar.append({
+                        "incident_id": m.get("id", "unknown"),
+                        "description": m.get("memory", ""),
+                        "similarity": m.get("score", "unknown"),
+                        "outcome": m.get("metadata", {}).get("kind", "unknown"),
+                    })
+
+            # Extract distinguishing factors from hybrid memory results
+            memory_list = []
+            if isinstance(hybrid_result, dict):
+                memory_list = hybrid_result.get("results", {}).get("memory", [])
+            if not isinstance(memory_list, list):
+                memory_list = []
+
+            different = []
+            for m in memory_list[:5]:
+                if isinstance(m, dict):
+                    different.append({
+                        "factor": m.get("memory", "")[:200],
+                        "match_quality": m.get("score", "unknown"),
+                        "source": m.get("metadata", {}).get("agent_id", "hybrid_retrieval"),
+                    })
+
+            result = {
+                "query": description,
+                "similar": similar,
+                "different": different,
+                "source": "meko_hybrid_retrieval",
+                "limit": limit,
+            }
+    except (MekoAdapterError, ExceptionGroup, OSError) as e:
+        return json.dumps({
+            "query": description,
+            "similar": [],
+            "different": [],
+            "source": "knowledge_base_unavailable",
+            "message": f"Meko pattern lookup unavailable: {e}",
+            "limit": limit,
+        }, indent=2)
     return json.dumps(result, indent=2)
 
 
@@ -275,18 +344,31 @@ async def query_knowledge(
 ) -> str:
     """Search the Meko knowledge base for fraud playbooks and risk rules.
 
-    Uses context_search with force_source="knowledge_base" to retrieve
-    indexed KB documents relevant to the query.
+    Creates a conversation and searches it without force_source so Meko
+    searches memory, knowledge base, and conversations within that scope.
     """
     meko = MekoAdapter(settings)
-    async with meko.connect() as session:
-        result = await session.call(
-            "context_search",
-            query=query,
-            force_source="knowledge_base",
-            limit=limit,
-            agent_id="analyst_knowledge_query",
-        )
+    try:
+        async with meko.connect() as session:
+            conversation_id = await session.create_conversation(
+                "analyst_knowledge_query",
+                "Knowledge base search",
+                {"kind": "knowledge_base_search"},
+            )
+            result = await session.call(
+                "context_search",
+                query=query,
+                conversation_id=conversation_id,
+                limit=limit,
+                agent_id="analyst_knowledge_query",
+            )
+    except (MekoAdapterError, ExceptionGroup, OSError) as e:
+        return json.dumps({
+            "query": query,
+            "matches": [],
+            "source": "knowledge_base_unavailable",
+            "message": f"Knowledge base search unavailable: {e}",
+        }, indent=2)
     return json.dumps(result, indent=2)
 
 
@@ -305,11 +387,18 @@ async def get_artifact(
     Each retrieval resets the artifact's expiry clock.
     """
     meko = MekoAdapter(settings)
-    async with meko.connect() as session:
-        result = await session.artifact_get(
-            artifact_hash=artifact_hash,
-            agent_id="analyst_artifact_get",
-        )
+    try:
+        async with meko.connect() as session:
+            result = await session.artifact_get(
+                artifact_hash=artifact_hash,
+                agent_id="analyst_artifact_get",
+            )
+    except (MekoAdapterError, ExceptionGroup, OSError) as e:
+        return json.dumps({
+            "artifact_hash": artifact_hash,
+            "source": "artifact_unavailable",
+            "message": f"Artifact retrieval unavailable: {e}",
+        }, indent=2)
     return json.dumps(result, indent=2)
 
 
@@ -645,3 +734,7 @@ async def get_draft_edit_rate() -> str:
 def main() -> None:
     """Run the MCP server over stdio."""
     server.run()
+
+
+if __name__ == "__main__":
+    main()
